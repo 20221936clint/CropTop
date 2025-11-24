@@ -1,0 +1,146 @@
+/* Tables */
+.admin-table,
+.users-table,
+.members-table,
+.crops-table,
+.rentals-table,
+.fertilizer-table,
+.distribution-table,
+.equipment-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 800px;
+}
+
+.admin-table thead,
+.users-table thead,
+.members-table thead,
+.crops-table thead,
+.rentals-table thead,
+.fertilizer-table thead,
+.distribution-table thead,
+.equipment-table thead {
+    background: #f8f9fa;
+}
+
+.admin-table th,
+.users-table th,
+.members-table th,
+.crops-table th,
+.rentals-table th,
+.fertilizer-table th,
+.distribution-table th,
+.equipment-table th {
+    padding: 0.875rem;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    border-right: 1px solid var(--border);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.admin-table th:last-child,
+.users-table th:last-child,
+.members-table th:last-child,
+.crops-table th:last-child,
+.rentals-table th:last-child,
+.fertilizer-table th:last-child,
+.distribution-table th:last-child,
+.equipment-table th:last-child {
+    border-right: none;
+}
+
+.admin-table td,
+.users-table td,
+.members-table td,
+.crops-table td,
+.rentals-table td,
+.fertilizer-table td,
+.distribution-table td,
+.equipment-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.admin-table td:last-child,
+.users-table td:last-child,
+.members-table td:last-child,
+.crops-table td:last-child,
+.rentals-table td:last-child,
+.fertilizer-table td:last-child,
+.distribution-table td:last-child,
+.equipment-table td:last-child {
+    border-right: none;
+}
+
+.admin-table tbody tr:last-child td,
+.users-table tbody tr:last-child td,
+.members-table tbody tr:last-child td,
+.crops-table tbody tr:last-child td,
+.rentals-table tbody tr:last-child td,
+.fertilizer-table tbody tr:last-child td,
+.distribution-table tbody tr:last-child td,
+.equipment-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table tbody tr:hover,
+.users-table tbody tr:hover,
+.members-table tbody tr:hover,
+.crops-table tbody tr:hover,
+.rentals-table tbody tr:hover,
+.fertilizer-table tbody tr:hover,
+.distribution-table tbody tr:hover,
+.equipment-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Table Containers */
+#usersTableContainer,
+#membersTableContainer,
+#userCropsContainer,
+#equipmentTableContainer,
+#fertilizerTableContainer,
+#distributionTableContainer {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+}
+
+.rentals-table-container {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    overflow-x: auto;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.table-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}

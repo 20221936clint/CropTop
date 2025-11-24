@@ -1,0 +1,100 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --sidebar-bg: #3d4f5f;
+    --sidebar-active: #2c3e50;
+    --main-bg: #f5f7fa;
+    --white: #ffffff;
+    --text-dark: #2c3e50;
+    --text-light: #7f8c8d;
+    --blue: #3498db;
+    --green: #27ae60;
+    --cyan: #17a2b8;
+    --orange: #f39c12;
+    --red: #e74c3c;
+    --border: #e0e6ed;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--main-bg);
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Scrollbar Styles */
+.sidebar::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.modal-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+#usersTableContainer::-webkit-scrollbar,
+#membersTableContainer::-webkit-scrollbar,
+#userCropsContainer::-webkit-scrollbar,
+#equipmentTableContainer::-webkit-scrollbar,
+#fertilizerTableContainer::-webkit-scrollbar,
+#distributionTableContainer::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+#usersTableContainer::-webkit-scrollbar-track,
+#membersTableContainer::-webkit-scrollbar-track,
+#userCropsContainer::-webkit-scrollbar-track,
+#equipmentTableContainer::-webkit-scrollbar-track,
+#fertilizerTableContainer::-webkit-scrollbar-track,
+#distributionTableContainer::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#usersTableContainer::-webkit-scrollbar-thumb,
+#membersTableContainer::-webkit-scrollbar-thumb,
+#userCropsContainer::-webkit-scrollbar-thumb,
+#equipmentTableContainer::-webkit-scrollbar-thumb,
+#fertilizerTableContainer::-webkit-scrollbar-thumb,
+#distributionTableContainer::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+#usersTableContainer::-webkit-scrollbar-thumb:hover,
+#membersTableContainer::-webkit-scrollbar-thumb:hover,
+#userCropsContainer::-webkit-scrollbar-thumb:hover,
+#equipmentTableContainer::-webkit-scrollbar-thumb:hover,
+#fertilizerTableContainer::-webkit-scrollbar-thumb:hover,
+#distributionTableContainer::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Loading and Error States */
+.loading,
+.no-data,
+.error {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+.error {
+    color: #e74c3c;
+}

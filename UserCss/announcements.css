@@ -1,0 +1,195 @@
+/* Announcements User Styles */
+.announcements-user-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.announcements-user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.announcements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.announcement-user-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.75rem;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.announcement-user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.announcement-user-card.priority-urgent {
+    border-left-color: #e74c3c;
+    background: linear-gradient(to right, rgba(231, 76, 60, 0.05), white);
+}
+
+.announcement-user-card.priority-high {
+    border-left-color: #f39c12;
+    background: linear-gradient(to right, rgba(243, 156, 18, 0.05), white);
+}
+
+.announcement-user-card.priority-medium {
+    border-left-color: #3498db;
+    background: linear-gradient(to right, rgba(52, 152, 219, 0.05), white);
+}
+
+.announcement-user-card.priority-low {
+    border-left-color: #95a5a6;
+    background: linear-gradient(to right, rgba(149, 165, 166, 0.05), white);
+}
+
+.announcement-user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.announcement-user-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.announcement-user-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.category-badge,
+.priority-badge {
+    padding: 0.375rem 0.875rem;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.category-badge.general {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.category-badge.meeting {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.category-badge.event {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.category-badge.notice {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.category-badge.emergency {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.priority-badge.urgent {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.priority-badge.high {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.priority-badge.medium {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.priority-badge.low {
+    background: #f5f5f5;
+    color: #616161;
+}
+
+.announcement-user-message {
+    color: var(--text-dark);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+    white-space: pre-wrap;
+}
+
+.announcement-user-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+    font-size: 0.875rem;
+}
+
+.announcement-user-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-light);
+}
+
+.announcement-user-date svg {
+    flex-shrink: 0;
+}
+
+.announcement-user-author {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.no-announcements {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px dashed #dee2e6;
+}
+
+.no-announcements p {
+    margin-top: 0.5rem;
+}
+
+/* Refresh Button */
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-dark);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    background: #f8f9fa;
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}

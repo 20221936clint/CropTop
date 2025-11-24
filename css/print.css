@@ -1,0 +1,477 @@
+/* Print Styles - Unified Print Layout for All Reports */
+
+@media print {
+    /* Reset and Base Styles */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: white !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Hide non-printable elements */
+    .sidebar,
+    .top-header,
+    .header-actions,
+    .action-btn,
+    .nav-item,
+    .dropdown-menu,
+    .modal,
+    .submit-btn,
+    .cancel-btn,
+    .edit-btn,
+    .delete-btn,
+    .update-reply-btn,
+    button:not(.print-only),
+    .no-print {
+        display: none !important;
+    }
+
+    /* Main content adjustments */
+    .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    #contentContainer {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .dashboard-content {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Print Header - Logo and Title */
+    .dashboard-content::before {
+        content: '';
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 30px 0 20px 0;
+        background: white;
+        page-break-after: avoid;
+    }
+
+    /* Add logo and title dynamically */
+    .section-header {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px 40px !important;
+        margin: 0 !important;
+        background: white !important;
+        border-bottom: 3px solid #27ae60 !important;
+        page-break-after: avoid;
+    }
+
+    .section-header::before {
+        content: '';
+        display: block;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 15px auto;
+        background-image: url('https://isjmawdwipxcpcrgjnjp.supabase.co/storage/v1/object/sign/logos/556960937_1521236358911637_5388455041696255542_n%20(1).jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zODlmYzgyNC1mYjBjLTRmZGQtODZjNi03NjBiODgzZjhjYzgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsb2dvcy81NTY5NjA5MzdfMTUyMTIzNjM1ODkxMTYzN181Mzg4NDU1MDQxNjk2MjU1NTQyX24gKDEpLmpwZyIsImlhdCI6MTc2Mjk1Mjk3NSwiZXhwIjoxNzk0NDg4OTc1fQ.kPbbEE6yR9NTIsdxp-PfNis_dm80lAskWmRfYa0x-TY');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        border-radius: 50%;
+    }
+
+    .section-title {
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        color: #27ae60 !important;
+        margin: 10px 0 5px 0 !important;
+        text-transform: none !important;
+    }
+
+    .section-header::after {
+        content: 'Agricultural Cooperative Management System';
+        display: block;
+        font-size: 14px;
+        color: #666;
+        margin-top: 5px;
+        font-weight: 400;
+    }
+
+    /* Report Date and Summary Info */
+    .stats-grid {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 40px !important;
+        margin: 0 0 20px 0 !important;
+        background: white !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+    }
+
+    .stat-card {
+        display: inline-flex !important;
+        flex-direction: row !important;
+        align-items: center;
+        gap: 10px;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        flex: 0 0 auto !important;
+    }
+
+    .stat-icon-box {
+        display: none !important;
+    }
+
+    .stat-info {
+        text-align: left !important;
+    }
+
+    .stat-label {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        color: #27ae60 !important;
+        margin: 0 !important;
+        display: block;
+    }
+
+    .stat-number {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        color: #2c3e50 !important;
+        margin: 0 !important;
+    }
+
+    /* Problems Section */
+    .problems-section {
+        padding: 0 40px 20px 40px !important;
+        margin: 0 !important;
+        page-break-inside: avoid;
+    }
+
+    .problems-header {
+        display: flex !important;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px !important;
+        padding-bottom: 10px !important;
+        border-bottom: 2px solid #27ae60 !important;
+    }
+
+    .problems-header svg {
+        width: 20px !important;
+        height: 20px !important;
+        color: #e74c3c !important;
+    }
+
+    .problems-header h3 {
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        color: #2c3e50 !important;
+        margin: 0 !important;
+    }
+
+    .problems-list {
+        display: block !important;
+    }
+
+    .problem-card {
+        background: white !important;
+        border: 1px solid #ddd !important;
+        border-radius: 8px !important;
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+        page-break-inside: avoid;
+    }
+
+    .problem-badges {
+        display: flex !important;
+        gap: 8px;
+        margin-bottom: 10px !important;
+    }
+
+    .problem-badge {
+        display: inline-block !important;
+        padding: 4px 10px !important;
+        border-radius: 4px !important;
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+    }
+
+    .badge-yellow { background: #fff3cd !important; color: #856404 !important; }
+    .badge-blue { background: #cfe2ff !important; color: #084298 !important; }
+    .badge-purple { background: #e7d6ff !important; color: #6f42c1 !important; }
+    .badge-gray { background: #e9ecef !important; color: #495057 !important; }
+    .badge-red { background: #f8d7da !important; color: #842029 !important; }
+    .badge-orange { background: #ffe5d0 !important; color: #cc5200 !important; }
+    .badge-green { background: #d1e7dd !important; color: #0f5132 !important; }
+
+    .problem-content {
+        font-size: 11px !important;
+    }
+
+    .problem-info .info-row {
+        display: flex;
+        margin-bottom: 5px;
+    }
+
+    .info-label {
+        font-weight: 600 !important;
+        color: #666 !important;
+        min-width: 80px;
+        font-size: 11px !important;
+    }
+
+    .info-value {
+        color: #2c3e50 !important;
+        font-size: 11px !important;
+    }
+
+    .problem-issue,
+    .admin-response {
+        margin-top: 10px !important;
+        padding: 10px !important;
+        background: #f8f9fa !important;
+        border-radius: 4px !important;
+    }
+
+    .issue-label,
+    .response-label {
+        font-weight: 600 !important;
+        color: #27ae60 !important;
+        font-size: 11px !important;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .issue-text,
+    .response-text {
+        color: #2c3e50 !important;
+        font-size: 11px !important;
+        line-height: 1.5;
+        margin: 0 !important;
+    }
+
+    /* Detailed Reports Sections */
+    .detailed-reports-section {
+        padding: 0 40px 20px 40px !important;
+        margin: 20px 0 !important;
+        page-break-inside: avoid;
+    }
+
+    .section-subtitle {
+        display: flex !important;
+        align-items: center;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        color: #2c3e50 !important;
+        margin-bottom: 15px !important;
+        padding-bottom: 10px !important;
+        border-bottom: 2px solid #27ae60 !important;
+    }
+
+    .section-subtitle svg {
+        margin-right: 8px !important;
+        color: #27ae60 !important;
+    }
+
+    /* Crops and Rentals Lists */
+    .crops-list,
+    .rentals-list {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 15px !important;
+    }
+
+    .detail-card {
+        background: white !important;
+        border: 1px solid #ddd !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        page-break-inside: avoid;
+    }
+
+    .detail-header {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+    }
+
+    .detail-header h4 {
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: #2c3e50 !important;
+        margin: 0 !important;
+    }
+
+    .detail-date {
+        font-size: 10px !important;
+        color: #666 !important;
+    }
+
+    .status-badge {
+        padding: 3px 8px !important;
+        border-radius: 4px !important;
+        font-size: 9px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+    }
+
+    .status-badge.pending { background: #fff3cd !important; color: #856404 !important; }
+    .status-badge.approved { background: #d1e7dd !important; color: #0f5132 !important; }
+    .status-badge.active { background: #d1e7dd !important; color: #0f5132 !important; }
+    .status-badge.completed { background: #cfe2ff !important; color: #084298 !important; }
+    .status-badge.rejected { background: #f8d7da !important; color: #842029 !important; }
+
+    .detail-info {
+        display: block !important;
+    }
+
+    .detail-info .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        font-size: 11px !important;
+    }
+
+    .detail-info .info-label {
+        font-weight: 600 !important;
+        color: #666 !important;
+    }
+
+    .detail-info .info-value {
+        color: #2c3e50 !important;
+        text-align: right;
+    }
+
+    /* Footer */
+    .dashboard-content::after {
+        content: 'Generated by CropTop Admin Dashboard | ' attr(data-date) '\AThis is a computer-generated report. No signature required.';
+        white-space: pre-line;
+        display: block;
+        text-align: center;
+        font-size: 10px;
+        color: #666;
+        padding: 20px 40px;
+        margin-top: 30px;
+        border-top: 1px solid #e0e0e0;
+        page-break-inside: avoid;
+    }
+
+    /* Page breaks */
+    .page-break {
+        page-break-after: always;
+    }
+
+    .no-page-break {
+        page-break-inside: avoid;
+    }
+
+    /* Loading spinners */
+    .loading-spinner {
+        display: none !important;
+    }
+
+    /* No data messages */
+    .no-data,
+    .no-problems {
+        text-align: center !important;
+        padding: 20px !important;
+        color: #666 !important;
+        font-size: 12px !important;
+    }
+
+    /* Error messages */
+    .error-message,
+    .error-text {
+        display: none !important;
+    }
+
+    /* Ensure proper spacing */
+    @page {
+        margin: 0.75in;
+        size: letter portrait;
+    }
+
+    /* Table styles for any tabular data */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 15px 0 !important;
+        font-size: 11px !important;
+        page-break-inside: auto;
+    }
+
+    thead {
+        display: table-header-group;
+        background: #f8f9fa !important;
+    }
+
+    tbody tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    th {
+        background: #27ae60 !important;
+        color: white !important;
+        padding: 10px !important;
+        text-align: left !important;
+        font-weight: 600 !important;
+        font-size: 11px !important;
+        border: 1px solid #ddd !important;
+    }
+
+    td {
+        padding: 8px 10px !important;
+        border: 1px solid #ddd !important;
+        color: #2c3e50 !important;
+        font-size: 11px !important;
+    }
+
+    tr:nth-child(even) {
+        background: #f8f9fa !important;
+    }
+
+    /* Specific adjustments for user crops report */
+    .crops-list .detail-card,
+    .rentals-list .detail-card {
+        break-inside: avoid;
+    }
+
+    /* Month filter - show in print */
+    .month-filter {
+        display: none !important;
+    }
+}
+
+/* Print-specific utility classes */
+.print-only {
+    display: none;
+}
+
+@media print {
+    .print-only {
+        display: block !important;
+    }
+    
+    .screen-only {
+        display: none !important;
+    }
+}

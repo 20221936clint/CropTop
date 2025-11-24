@@ -1,0 +1,143 @@
+/* Sidebar Styles - Enhanced for Mobile */
+.sidebar {
+    width: 240px;
+    background: var(--sidebar-bg);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 1001;
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.sidebar-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 0.75rem;
+}
+
+.sidebar-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--white);
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    min-height: 44px; /* Touch-friendly */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item:hover {
+    background: var(--sidebar-hover);
+    color: var(--white);
+    border-left-color: var(--primary-blue);
+}
+
+.nav-item.active {
+    background: var(--sidebar-hover);
+    color: var(--white);
+    border-left-color: var(--primary-blue);
+}
+
+.nav-item:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.nav-item span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Custom scrollbar for sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Mobile specific styles */
+@media (max-width: 992px) {
+    .sidebar {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 85%;
+        max-width: 300px;
+    }
+    
+    .sidebar-header {
+        padding: 1.25rem;
+    }
+    
+    .sidebar-logo {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .sidebar-title {
+        font-size: 1rem;
+    }
+    
+    .nav-item {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .nav-item svg {
+        width: 18px;
+        height: 18px;
+    }
+}

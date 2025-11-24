@@ -1,0 +1,167 @@
+/* My Crops Section */
+.crops-container {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.crops-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.crops-header .section-header {
+    margin-bottom: 0;
+    font-size: 1.75rem;
+    color: #1e3a5f;
+}
+
+.add-crop-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.add-crop-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.add-crop-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Crops Grid */
+.crops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.crop-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.crop-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.crop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.crop-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e3a5f;
+    margin: 0;
+}
+
+.crop-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.crop-status.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.crop-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.crop-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+}
+
+.crop-detail-item.full-width {
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.crop-detail-item .label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.crop-detail-item .value {
+    font-size: 0.875rem;
+    color: #1e3a5f;
+    text-align: right;
+}
+
+.crop-detail-item.full-width .value {
+    text-align: left;
+}
+
+.crop-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.crop-action-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.crop-action-btn.delete {
+    background: #fee;
+    color: #dc3545;
+}
+
+.crop-action-btn.delete:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.crop-action-btn svg {
+    width: 16px;
+    height: 16px;
+}

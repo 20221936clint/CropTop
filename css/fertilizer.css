@@ -1,0 +1,120 @@
+/* Fertilizer Distribution Styles */
+.fertilizer-container {
+    padding: 2rem;
+}
+
+.fertilizer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.distribution-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.distribution-stat-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.distribution-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.distribution-stat-icon.green {
+    background: rgba(39, 174, 96, 0.1);
+    color: var(--green);
+}
+
+.distribution-stat-icon.blue {
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--blue);
+}
+
+.distribution-stat-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.25rem;
+}
+
+.distribution-stat-label {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.fertilizer-table-container {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+}
+
+.fertilizer-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fertilizer-table th,
+.fertilizer-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.fertilizer-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.fertilizer-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.fertilizer-type-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.fertilizer-type-badge.nitrogen {
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--blue);
+}
+
+.fertilizer-type-badge.phosphorus {
+    background: rgba(155, 89, 182, 0.1);
+    color: #9b59b6;
+}
+
+.fertilizer-type-badge.potassium {
+    background: rgba(230, 126, 34, 0.1);
+    color: var(--orange);
+}
+
+.fertilizer-type-badge.npk {
+    background: rgba(39, 174, 96, 0.1);
+    color: var(--green);
+}
+
+.fertilizer-type-badge.organic {
+    background: rgba(22, 160, 133, 0.1);
+    color: #16a085;
+}

@@ -1,0 +1,135 @@
+/* Main CSS - Imports all modular CSS files */
+/* Import all CSS modules */
+/* Import all modular CSS files */
+@import url('./base.css');
+@import url('./sidebar.css');
+@import url('./header.css');
+@import url('./dashboard.css');
+@import url('./tables.css');
+@import url('./forms.css');
+@import url('./buttons.css');
+@import url('./modals.css');
+@import url('./components.css');
+@import url('./accounts.css');
+@import url('./crops.css');
+@import url('./equipment.css');
+@import url('./fertilizer.css');
+@import url('./announcements.css');
+@import url('./admin-feedback.css');
+@import url('./rentals.css');
+@import url('./member-rentals.css');
+@import url('./membership-fee.css');
+@import url('./notifications.css');
+@import url('./reports.css');
+@import url('./analytics.css');
+@import url('./responsive.css');
+@import url('./print.css');
+
+/* Additional Containers */
+.equipment-management-container,
+.fertilizer-distribution-container,
+.distribution-container,
+.users-container,
+.members-container,
+.crops-management-container {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.equipment-header,
+.fertilizer-header,
+.distribution-header,
+.users-header,
+.members-header,
+.crops-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-management-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-count {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--blue);
+    padding: 0.5rem 1rem;
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 8px;
+}
+
+.admin-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+}
+
+.admin-form-card,
+.admin-list-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.admin-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.admin-info-box {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--blue);
+}
+
+.admin-info-box p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.header-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.print-report-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--green);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.print-report-btn:hover {
+    background: #219a52;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}

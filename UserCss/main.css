@@ -1,0 +1,69 @@
+/* Main CSS file that imports all modular CSS files */
+@import url('./base.css');
+@import url('./sidebar.css');
+@import url('./header.css');
+@import url('./components.css');
+@import url('./forms.css');
+@import url('./tables.css');
+@import url('./crops.css');
+@import url('./equipment.css');
+@import url('./announcements.css');
+@import url('./fertilizer.css');
+@import url('./feedback.css');
+@import url('./profile.css');
+@import url('./responsive.css');
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    max-width: 400px;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.notification-success {
+    border-left: 4px solid #27ae60;
+}
+
+.notification-success svg {
+    color: #27ae60;
+}
+
+.notification-error {
+    border-left: 4px solid #e74c3c;
+}
+
+.notification-error svg {
+    color: #e74c3c;
+}
+
+.notification-info {
+    border-left: 4px solid #3498db;
+}
+
+.notification-info svg {
+    color: #3498db;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+}

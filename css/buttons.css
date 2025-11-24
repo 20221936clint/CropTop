@@ -1,0 +1,238 @@
+/* Action Buttons */
+.action-buttons-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.action-btn-small {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 70px;
+    height: 36px;
+}
+
+.action-btn-small svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.action-btn-small.edit {
+    background: var(--blue);
+    color: var(--white);
+}
+
+.action-btn-small.edit:hover {
+    background: #2980b9;
+}
+
+.action-btn-small.view {
+    background: var(--blue);
+    color: var(--white);
+}
+
+.action-btn-small.view:hover {
+    background: #2980b9;
+}
+
+.action-btn-small.block {
+    background: var(--orange);
+    color: var(--white);
+}
+
+.action-btn-small.block:hover {
+    background: #e67e22;
+}
+
+.action-btn-small.delete {
+    background: var(--red);
+    color: var(--white);
+}
+
+.action-btn-small.delete:hover {
+    background: #c0392b;
+}
+
+.action-btn-small.approve {
+    background: var(--green);
+    color: var(--white);
+}
+
+.action-btn-small.approve:hover {
+    background: #219a52;
+}
+
+.action-btn-small.reject {
+    background: var(--red);
+    color: var(--white);
+}
+
+.action-btn-small.reject:hover {
+    background: #c0392b;
+}
+
+.action-btn-small.return {
+    background: var(--blue);
+    color: var(--white);
+}
+
+.action-btn-small.return:hover {
+    background: #2980b9;
+}
+
+.add-equipment-btn,
+.add-announcement-btn,
+.add-fertilizer-btn,
+.add-distribution-btn,
+.add-rental-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--blue);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-equipment-btn:hover,
+.add-announcement-btn:hover,
+.add-fertilizer-btn:hover,
+.add-distribution-btn:hover,
+.add-rental-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    background: #f8f9fa;
+    border-color: var(--blue);
+    color: var(--blue);
+}
+
+.submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--blue);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.submit-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.cancel-btn {
+    flex: 1;
+    padding: 1rem;
+    background: #e0e6ed;
+    color: var(--text-dark);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background: #d0d6dd;
+}
+
+.action-btn {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn.edit {
+    background: var(--blue);
+    color: white;
+}
+
+.action-btn.edit:hover {
+    background: #2980b9;
+}
+
+.action-btn.delete {
+    background: var(--red);
+    color: white;
+}
+
+.action-btn.delete:hover {
+    background: #c0392b;
+}
+
+.guidelines-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.guidelines-btn:hover {
+    background: #f8f9fa;
+    border-color: var(--blue);
+    color: var(--blue);
+}

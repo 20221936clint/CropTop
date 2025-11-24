@@ -1,0 +1,336 @@
+/* Membership Fee Management Styles */
+
+.membership-fee-container {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.membership-fee-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.fee-details-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.fee-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.fee-info-item {
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: #f8f9fa;
+}
+
+.fee-info-item.primary {
+    border-left: 4px solid #2196f3;
+}
+
+.fee-info-item.secondary {
+    border-left: 4px solid #4caf50;
+}
+
+.fee-label {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.fee-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2196f3;
+    margin-bottom: 0.25rem;
+}
+
+.fee-period {
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.fee-date {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #4caf50;
+    margin-top: 0.5rem;
+}
+
+.benefits-section {
+    margin-bottom: 2rem;
+}
+
+.benefits-title {
+    font-size: 1.25rem;
+    color: #1e3a5f;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.benefits-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: start;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.benefit-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+
+.benefit-item svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.benefit-content {
+    flex: 1;
+}
+
+.benefit-content strong {
+    display: block;
+    color: #1e3a5f;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.benefit-content p {
+    color: #666;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.payment-info-box {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+}
+
+.payment-info-box svg {
+    flex-shrink: 0;
+    color: #856404;
+    margin-top: 2px;
+}
+
+.payment-info-box h4 {
+    color: #856404;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.payment-info-box p {
+    color: #856404;
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.members-status-section {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-subtitle {
+    font-size: 1.25rem;
+    color: #1e3a5f;
+    font-weight: 600;
+    margin: 0;
+}
+
+.members-status-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+}
+
+.members-status-table thead {
+    background: #f8f9fa;
+}
+
+.members-status-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.members-status-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    color: var(--text-dark);
+}
+
+.members-status-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.membership-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.membership-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.membership-badge.inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.membership-badge.expired {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Membership Fee Form Styles */
+.membership-fee-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.benefit-input-group {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.benefit-input-group input {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.benefit-input-group input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.btn-remove-benefit {
+    padding: 0.5rem;
+    background: #dc3545;
+    color: var(--white);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-remove-benefit:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+.btn-add-benefit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--blue);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+}
+
+.btn-add-benefit:hover {
+    background: #1976d2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* Modal Styles for Membership Fee */
+.modal-content.large {
+    max-width: 900px;
+    width: 90%;
+}
+
+.membership-status-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .fee-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .benefit-input-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .btn-remove-benefit {
+        width: 100%;
+    }
+    
+    .members-status-table {
+        font-size: 0.85rem;
+    }
+    
+    .members-status-table th,
+    .members-status-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
