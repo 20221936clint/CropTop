@@ -349,49 +349,59 @@ async function deleteAdmin(adminId) {
     }
 }
 
-// Load View All Users
-async function loadViewAllUsers() {
+// Load Member List with Print Button
+async function loadMemberList() {
     const contentContainer = document.getElementById('contentContainer');
     contentContainer.innerHTML = `
         <div class="users-container">
             <div class="users-header">
-                <h2 class="section-title">User Management</h2>
-                <button class="refresh-btn" onclick="loadViewAllUsers()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 4 23 10 17 10"></polyline>
-                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                    </svg>
-                    Refresh
-                </button>
+                <h2 class="section-title">Member List</h2>
+                <div class="header-actions">
+                    <button class="print-btn" onclick="printMemberList()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                            <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                        Print List
+                    </button>
+                    <button class="refresh-btn" onclick="loadMemberList()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
             </div>
-            <div id="usersTableContainer">
-                <div class="loading">Loading users...</div>
+            <div id="membersTableContainer">
+                <div class="loading">Loading members...</div>
             </div>
         </div>
     `;
     
-    loadUsersTable();
+    loadMembersTable();
 }
 
-// Load Users Table
-async function loadUsersTable() {
+// Load Members Table
+async function loadMembersTable() {
     try {
         const { data: users, error } = await supabase
             .from('app_3704573dd8_users')
             .select('*')
             .order('created_at', { ascending: false });
         
-        const container = document.getElementById('usersTableContainer');
+        const container = document.getElementById('membersTableContainer');
         
         if (error) throw error;
         
         if (!users || users.length === 0) {
-            container.innerHTML = '<div class="no-data">No users found</div>';
+            container.innerHTML = '<div class="no-data">No members found</div>';
             return;
         }
         
         container.innerHTML = `
-            <table class="users-table">
+            <table class="users-table" id="membersPrintTable">
                 <thead>
                     <tr>
                         <th>FULL NAME</th>
@@ -400,8 +410,8 @@ async function loadUsersTable() {
                         <th>FARM NAME</th>
                         <th>LOCATION</th>
                         <th>HECTARES</th>
+                        <th>PHONE</th>
                         <th>STATUS</th>
-                        <th>ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -413,32 +423,8 @@ async function loadUsersTable() {
                             <td>${user.farm_name || 'N/A'}</td>
                             <td>${user.location || 'N/A'}</td>
                             <td>${user.total_hectares ? user.total_hectares + ' ha' : 'N/A'}</td>
+                            <td>${user.phone_number || 'N/A'}</td>
                             <td><span class="status-badge ${user.status}">${user.status || 'active'}</span></td>
-                            <td>
-                                <div class="action-buttons-group">
-                                    <button class="action-btn-small view" onclick="viewUserDetails('${user.id}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                        View
-                                    </button>
-                                    <button class="action-btn-small block" onclick="toggleUserStatus('${user.id}', '${user.status}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                        </svg>
-                                        ${user.status === 'blocked' ? 'Unblock' : 'Block'}
-                                    </button>
-                                    <button class="action-btn-small delete" onclick="deleteUser('${user.id}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        </svg>
-                                        Delete
-                                    </button>
-                                </div>
-                            </td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -446,56 +432,116 @@ async function loadUsersTable() {
         `;
         
     } catch (error) {
-        console.error('Error loading users:', error);
-        document.getElementById('usersTableContainer').innerHTML = '<div class="error">Error loading users</div>';
+        console.error('Error loading members:', error);
+        document.getElementById('membersTableContainer').innerHTML = '<div class="error">Error loading members</div>';
     }
 }
 
-// Toggle User Status
-async function toggleUserStatus(userId, currentStatus) {
-    const newStatus = currentStatus === 'blocked' ? 'active' : 'blocked';
-    
-    try {
-        const { error } = await supabase
-            .from('app_3704573dd8_users')
-            .update({ status: newStatus })
-            .eq('id', userId);
-        
-        if (error) throw error;
-        
-        const action = newStatus === 'blocked' ? 'blocked' : 'unblocked';
-        showNotification(
-            'User Status Updated', 
-            `User has been ${action} successfully`, 
-            newStatus === 'blocked' ? 'warning' : 'success'
-        );
-        loadViewAllUsers();
-        
-    } catch (error) {
-        console.error('Error updating user status:', error);
-        showNotification('Error', 'Failed to update user status: ' + error.message, 'error');
+// Print Member List Function
+function printMemberList() {
+    const printContent = document.getElementById('membersPrintTable');
+    if (!printContent) {
+        showNotification('Error', 'No member list to print', 'error');
+        return;
     }
-}
-
-// Delete User
-async function deleteUser(userId) {
-    if (!confirm('Are you sure you want to remove this user? This action cannot be undone.')) return;
     
-    try {
-        const { error } = await supabase
-            .from('app_3704573dd8_users')
-            .delete()
-            .eq('id', userId);
-        
-        if (error) throw error;
-        
-        showNotification('User Deleted', 'User has been removed successfully', 'success');
-        loadViewAllUsers();
-        
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        showNotification('Error', 'Failed to remove user: ' + error.message, 'error');
-    }
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>CropTop Member List - ${new Date().toLocaleDateString()}</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                    color: #333;
+                }
+                .print-header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    border-bottom: 2px solid #4CAF50;
+                    padding-bottom: 20px;
+                }
+                .print-header h1 {
+                    color: #4CAF50;
+                    margin: 0 0 10px 0;
+                }
+                .print-header p {
+                    margin: 5px 0;
+                    color: #666;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                }
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 12px 8px;
+                    text-align: left;
+                    font-size: 12px;
+                }
+                th {
+                    background-color: #4CAF50;
+                    color: white;
+                    font-weight: bold;
+                }
+                tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+                .status-badge {
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                .status-badge.active {
+                    background-color: #d4edda;
+                    color: #155724;
+                }
+                .status-badge.blocked {
+                    background-color: #f8d7da;
+                    color: #721c24;
+                }
+                .print-footer {
+                    margin-top: 30px;
+                    text-align: center;
+                    font-size: 11px;
+                    color: #666;
+                    border-top: 1px solid #ddd;
+                    padding-top: 10px;
+                }
+                @media print {
+                    body { padding: 10px; }
+                    .print-header { page-break-after: avoid; }
+                    table { page-break-inside: auto; }
+                    tr { page-break-inside: avoid; page-break-after: auto; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="print-header">
+                <h1>CropTop Member List</h1>
+                <p>Generated on: ${new Date().toLocaleString()}</p>
+                <p>Total Members: ${printContent.querySelectorAll('tbody tr').length}</p>
+            </div>
+            ${printContent.outerHTML}
+            <div class="print-footer">
+                <p>CropTop Agricultural Cooperative - Member Management System</p>
+                <p>This document is confidential and for internal use only</p>
+            </div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 250);
 }
 
 // View User Details
@@ -564,9 +610,4 @@ async function viewUserDetails(userId) {
 // Close User Details Modal
 function closeUserDetailsModal() {
     document.getElementById('userDetailsModal').style.display = 'none';
-}
-
-// Load Member List
-async function loadMemberList() {
-    loadViewAllUsers();
 }

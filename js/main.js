@@ -150,10 +150,6 @@ function loadSubsection(subsection) {
     const pageTitle = document.getElementById('pageTitle');
     
     switch(subsection) {
-        case 'view-all-users':
-            pageTitle.textContent = 'User Management';
-            loadViewAllUsers();
-            break;
         case 'create-user':
             pageTitle.textContent = 'Create New User';
             loadCreateUserForm();
