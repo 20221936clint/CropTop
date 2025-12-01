@@ -43,6 +43,7 @@ async function loadEquipmentTable() {
             <table class="equipment-table">
                 <thead>
                     <tr>
+                        <th>Photo</th>
                         <th>Equipment Name</th>
                         <th>Type</th>
                         <th>Rate/Day</th>
@@ -55,6 +56,20 @@ async function loadEquipmentTable() {
                 <tbody>
                     ${equipment.map(item => `
                         <tr>
+                            <td>
+                                ${item.photo_url ? `
+                                    <img src="${item.photo_url}" alt="${item.equipment_name}" 
+                                         style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
+                                 : 
+                                    <div style="width: 60px; height: 60px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0;">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                        </svg>
+                                    </div>
+                                `}
+                            </td>
                             <td><strong>${item.equipment_name}</strong></td>
                             <td>${item.equipment_type}</td>
                             <td>₱${parseFloat(item.member_rate).toFixed(2)}/day</td>
@@ -91,6 +106,77 @@ async function loadEquipmentTable() {
     }
 }
 
+// Preview photo for Add Equipment
+window.previewAddPhoto = function(event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('addPhotoPreview');
+    
+    if (file) {
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be less than 5MB');
+            event.target.value = '';
+            previewContainer.innerHTML = '';
+            return;
+        }
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert('Please upload a valid image file (JPEG, PNG, or WebP)');
+            event.target.value = '';
+            previewContainer.innerHTML = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewContainer.innerHTML = `
+                <img src="${e.target.result}" alt="Preview" 
+                     style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+            `;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.innerHTML = '';
+    }
+};
+
+// Preview photo for Edit Equipment
+window.previewEditPhoto = function(event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('editPhotoPreview');
+    
+    if (file) {
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be less than 5MB');
+            event.target.value = '';
+            return;
+        }
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert('Please upload a valid image file (JPEG, PNG, or WebP)');
+            event.target.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewContainer.innerHTML = `
+                <div style="margin-bottom: 1rem;">
+                    <p style="margin-bottom: 0.5rem; font-weight: 500;">New Photo Preview:</p>
+                    <img src="${e.target.result}" alt="Preview" 
+                         style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
 // Open Add Equipment Modal
 function openAddEquipmentModal() {
     const modal = document.getElementById('addEquipmentModal');
@@ -98,6 +184,7 @@ function openAddEquipmentModal() {
     
     // Reset form
     document.getElementById('addEquipmentForm').reset();
+    document.getElementById('addPhotoPreview').innerHTML = '';
     
     // Add form submit handler
     const form = document.getElementById('addEquipmentForm');
@@ -120,6 +207,36 @@ async function handleAddEquipment(e) {
     
     try {
         const memberRate = parseFloat(document.getElementById('memberRate').value);
+        let photoUrl = null;
+        
+        // Handle photo upload
+        const photoInput = document.getElementById('equipmentPhoto');
+        if (photoInput.files && photoInput.files[0]) {
+            const file = photoInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = ${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt};
+            const filePath = ${fileName};
+            
+            // Upload to Supabase Storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('equipment-photos')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+            
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                throw new Error('Failed to upload photo: ' + uploadError.message);
+            }
+            
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from('equipment-photos')
+                .getPublicUrl(filePath);
+            
+            photoUrl = urlData.publicUrl;
+        }
         
         const formData = {
             equipment_name: document.getElementById('equipmentName').value,
@@ -127,6 +244,7 @@ async function handleAddEquipment(e) {
             member_rate: memberRate,
             operator_rate: parseFloat(document.getElementById('operatorRate').value),
             status: document.getElementById('equipmentStatus').value,
+            photo_url: photoUrl,
             total_rentals: 0,
             created_at: new Date().toISOString()
         };
@@ -170,6 +288,21 @@ async function openEditEquipmentModal(equipmentId) {
         document.getElementById('editOperatorRate').value = equipment.operator_rate;
         document.getElementById('editEquipmentStatus').value = equipment.status;
         
+        // Show current photo
+        const photoPreview = document.getElementById('editPhotoPreview');
+        if (equipment.photo_url) {
+            photoPreview.innerHTML = `
+                <img src="${equipment.photo_url}" alt="${equipment.equipment_name}" 
+                     style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+            `;
+        } else {
+            photoPreview.innerHTML = `
+                <div style="padding: 2rem; background: #f5f5f5; border-radius: 8px; text-align: center; color: #999;">
+                    No photo uploaded
+                </div>
+            `;
+        }
+        
         // Show modal
         const modal = document.getElementById('editEquipmentModal');
         modal.style.display = 'flex';
@@ -210,6 +343,35 @@ async function handleEditEquipment(e) {
             status: document.getElementById('editEquipmentStatus').value,
             updated_at: new Date().toISOString()
         };
+        
+        // Handle photo upload if new photo is selected
+        const photoInput = document.getElementById('editEquipmentPhoto');
+        if (photoInput.files && photoInput.files[0]) {
+            const file = photoInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = ${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt};
+            const filePath = ${fileName};
+            
+            // Upload to Supabase Storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('equipment-photos')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+            
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                throw new Error('Failed to upload photo: ' + uploadError.message);
+            }
+            
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from('equipment-photos')
+                .getPublicUrl(filePath);
+            
+            updateData.photo_url = urlData.publicUrl;
+        }
         
         const { error } = await supabase
             .from('app_3704573dd8_equipment')
@@ -485,7 +647,7 @@ function renderActiveRentalsTable() {
 function toggleAcceptRentals() {
     acceptRentals = document.getElementById('acceptRentalsToggle').checked;
     const status = acceptRentals ? 'enabled' : 'disabled';
-    showNotification('Settings Updated', `Equipment rentals are now ${status}`, 'success');
+    showNotification('Settings Updated', Equipment rentals are now ${status}, 'success');
 }
 
 // Approve Request
