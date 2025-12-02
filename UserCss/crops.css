@@ -1,9 +1,6 @@
-/* My Crops Section */
+/* Crops Section Styles */
 .crops-container {
-    background: var(--white);
-    border-radius: 12px;
     padding: 2rem;
-    box-shadow: var(--card-shadow);
 }
 
 .crops-header {
@@ -13,79 +10,80 @@
     margin-bottom: 2rem;
 }
 
-.crops-header .section-header {
-    margin-bottom: 0;
-    font-size: 1.75rem;
-    color: #1e3a5f;
-}
-
 .add-crop-btn {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(46, 204, 113, 0.2);
 }
 
 .add-crop-btn:hover {
-    background: #2980b9;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 6px 12px rgba(46, 204, 113, 0.3);
 }
 
-.add-crop-btn svg {
-    width: 20px;
-    height: 20px;
-}
-
-/* Crops Grid */
 .crops-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
 }
 
 .crop-card {
     background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
 }
 
 .crop-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.crop-photo {
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    background: #f5f5f5;
+}
+
+.crop-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .crop-header {
     display: flex;
     justify-content: space-between;
-    align-items: start;
+    align-items: center;
     margin-bottom: 1rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 2px solid #f0f0f0;
 }
 
 .crop-header h3 {
+    color: #2c3e50;
     font-size: 1.25rem;
-    font-weight: 600;
-    color: #1e3a5f;
     margin: 0;
 }
 
 .crop-status {
     padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    border-radius: 20px;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
 }
 
@@ -94,17 +92,25 @@
     color: #155724;
 }
 
+.crop-status.harvested {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.crop-status.failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
 .crop-details {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 0.75rem;
 }
 
 .crop-detail-item {
     display: flex;
     justify-content: space-between;
-    align-items: start;
-    gap: 1rem;
+    padding: 0.5rem 0;
 }
 
 .crop-detail-item.full-width {
@@ -113,55 +119,198 @@
 }
 
 .crop-detail-item .label {
+    color: #7f8c8d;
+    font-weight: 600;
     font-size: 0.875rem;
-    color: #6c757d;
-    font-weight: 500;
 }
 
 .crop-detail-item .value {
-    font-size: 0.875rem;
-    color: #1e3a5f;
-    text-align: right;
-}
-
-.crop-detail-item.full-width .value {
-    text-align: left;
+    color: #2c3e50;
+    font-weight: 500;
 }
 
 .crop-actions {
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid #e0e0e0;
+    border-top: 2px solid #f0f0f0;
     display: flex;
     gap: 0.5rem;
 }
 
 .crop-action-btn {
     flex: 1;
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    transition: all 0.2s ease;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .crop-action-btn.delete {
     background: #fee;
-    color: #dc3545;
+    color: #e74c3c;
 }
 
 .crop-action-btn.delete:hover {
-    background: #dc3545;
+    background: #e74c3c;
     color: white;
 }
 
-.crop-action-btn svg {
-    width: 16px;
-    height: 16px;
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #7f8c8d;
+}
+
+/* Photo Preview */
+.photo-preview {
+    position: relative;
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 300px;
+}
+
+.photo-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.remove-photo-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.remove-photo-btn:hover {
+    background: #e74c3c;
+    transform: scale(1.1);
+}
+
+/* Admin Crops Table */
+.crops-management-container {
+    padding: 2rem;
+}
+
+.crops-table {
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.crops-table thead {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    color: white;
+}
+
+.crops-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+}
+
+.crops-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.crops-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.crop-photo-thumbnail {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.crop-photo-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.crop-photo-thumbnail img:hover {
+    transform: scale(1.1);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.user-email {
+    font-size: 0.875rem;
+    color: #7f8c8d;
+}
+
+.notes-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.refresh-btn, .print-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 2px solid #2ecc71;
+    color: #2ecc71;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover, .print-btn:hover {
+    background: #2ecc71;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .crops-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .crops-table {
+        font-size: 0.875rem;
+    }
+    
+    .crops-table th,
+    .crops-table td {
+        padding: 0.5rem;
+    }
 }
