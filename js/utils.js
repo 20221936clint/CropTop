@@ -224,6 +224,14 @@ function loadSection(section) {
             pageTitle.textContent = 'User Feedback Management';
             initializeAdminFeedback();
             break;
+        case 'reports':
+            pageTitle.textContent = 'Reports';
+            loadReportsSection();
+            break;
+        case 'analytics':
+            pageTitle.textContent = 'Analytics';
+            loadAnalyticsSection();
+            break;
         default:
             console.log('Section not implemented:', section);
     }

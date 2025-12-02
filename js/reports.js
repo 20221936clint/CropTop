@@ -15,9 +15,7 @@ window.loadReportsSection = async function() {
                 <h2 class="section-title">CropTop - Reports</h2>
                 <div class="header-actions">
                     <select id="monthFilter" class="month-filter" onchange="handleMonthChange()">
-                        <option value="2025-11">November 2025</option>
-                        <option value="2025-10">October 2025</option>
-                        <option value="2025-09">September 2025</option>
+                        <!-- Will be populated dynamically -->
                     </select>
                     <button class="action-btn blue" onclick="refreshReports()">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -46,8 +44,8 @@ window.loadReportsSection = async function() {
                         </svg>
                     </div>
                     <div class="stat-info">
-                        <p class="stat-label">Report Date:</p>
-                        <h3 class="stat-number">${currentDate}</h3>
+                        <p class="stat-label">Report Period:</p>
+                        <h3 class="stat-number" id="reportPeriod">Loading...</h3>
                     </div>
                 </div>
 
@@ -163,6 +161,9 @@ window.loadReportsSection = async function() {
         </div>
     `;
 
+    // Initialize month filter with available months
+    await initializeMonthFilter();
+    
     // Load all report data
     await Promise.all([
         loadSummaryStatistics(),
@@ -172,29 +173,123 @@ window.loadReportsSection = async function() {
     ]);
 }
 
+// Initialize month filter with available data months
+async function initializeMonthFilter() {
+    const monthFilter = document.getElementById('monthFilter');
+    if (!monthFilter) return;
+    
+    try {
+        // Get all unique months from crops, rentals, and feedback
+        const [cropsData, rentalsData, feedbackData] = await Promise.all([
+            supabase.from('app_3704573dd8_user_crops').select('created_at'),
+            supabase.from('app_3704573dd8_member_rental_requests').select('created_at'),
+            supabase.from('app_3704573dd8_feedback').select('created_at')
+        ]);
+        
+        const allDates = [
+            ...(cropsData.data || []).map(d => d.created_at),
+            ...(rentalsData.data || []).map(d => d.created_at),
+            ...(feedbackData.data || []).map(d => d.created_at)
+        ];
+        
+        // Extract unique year-month combinations
+        const monthsSet = new Set();
+        allDates.forEach(dateStr => {
+            if (dateStr) {
+                const date = new Date(dateStr);
+                const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                monthsSet.add(yearMonth);
+            }
+        });
+        
+        // Convert to array and sort (newest first)
+        const months = Array.from(monthsSet).sort().reverse();
+        
+        // If no data, add current month
+        if (months.length === 0) {
+            const now = new Date();
+            months.push(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+        }
+        
+        // Add "All Time" option at the beginning
+        let optionsHTML = '<option value="all">All Time</option>';
+        
+        // Populate dropdown with months
+        optionsHTML += months.map(yearMonth => {
+            const [year, month] = yearMonth.split('-');
+            const date = new Date(year, parseInt(month) - 1, 1);
+            const monthName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            return `<option value="${yearMonth}">${monthName}</option>`;
+        }).join('');
+        
+        monthFilter.innerHTML = optionsHTML;
+        
+        // Store selected month globally - default to "All Time"
+        window.selectedMonth = 'all';
+        
+    } catch (error) {
+        console.error('Error initializing month filter:', error);
+        // Fallback to "All Time"
+        monthFilter.innerHTML = '<option value="all">All Time</option>';
+        window.selectedMonth = 'all';
+    }
+}
+
+// Get date range for selected month
+function getSelectedMonthRange() {
+    const selectedMonth = document.getElementById('monthFilter')?.value || window.selectedMonth;
+    
+    // If "All Time" is selected, return null to indicate no date filtering
+    if (selectedMonth === 'all') {
+        return null;
+    }
+    
+    if (!selectedMonth) {
+        const now = new Date();
+        return {
+            start: new Date(now.getFullYear(), now.getMonth(), 1),
+            end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+        };
+    }
+    
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0, 23, 59, 59);
+    
+    return { start, end };
+}
+
 // Load Summary Statistics for the top cards
 async function loadSummaryStatistics() {
     try {
-        const currentMonth = new Date();
-        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const dateRange = getSelectedMonthRange();
         
-        // Fetch crops planted this month
-        const { data: cropsData, error: cropsError } = await supabase
-            .from('app_3704573dd8_user_crops')
-            .select('id')
-            .gte('created_at', firstDay.toISOString());
+        // Update report period display
+        const reportPeriodEl = document.getElementById('reportPeriod');
+        if (reportPeriodEl) {
+            if (dateRange === null) {
+                reportPeriodEl.textContent = 'All Time';
+            } else {
+                reportPeriodEl.textContent = dateRange.start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            }
+        }
         
-        // Fetch equipment rentals this month
-        const { data: rentalsData, error: rentalsError } = await supabase
-            .from('app_3704573dd8_member_rental_requests')
-            .select('id, total_cost')
-            .gte('created_at', firstDay.toISOString());
+        // Build queries with optional date filtering
+        let cropsQuery = supabase.from('app_3704573dd8_user_crops').select('id');
+        let rentalsQuery = supabase.from('app_3704573dd8_member_rental_requests').select('id, total_cost');
+        let problemsQuery = supabase.from('app_3704573dd8_feedback').select('id');
         
-        // Fetch problems reported this month
-        const { data: problemsData, error: problemsError } = await supabase
-            .from('app_3704573dd8_feedback')
-            .select('id')
-            .gte('created_at', firstDay.toISOString());
+        // Apply date filters only if not "All Time"
+        if (dateRange !== null) {
+            cropsQuery = cropsQuery.gte('created_at', dateRange.start.toISOString()).lte('created_at', dateRange.end.toISOString());
+            rentalsQuery = rentalsQuery.gte('created_at', dateRange.start.toISOString()).lte('created_at', dateRange.end.toISOString());
+            problemsQuery = problemsQuery.gte('created_at', dateRange.start.toISOString()).lte('created_at', dateRange.end.toISOString());
+        }
+        
+        // Fetch data
+        const { data: cropsData } = await cropsQuery;
+        const { data: rentalsData } = await rentalsQuery;
+        const { data: problemsData } = await problemsQuery;
         
         // Update the summary cards
         document.getElementById('cropsPlantedCount').textContent = cropsData?.length || 0;
@@ -211,20 +306,22 @@ async function loadProblemsAndIssues() {
     const problemsSection = document.getElementById('problemsSection');
     
     try {
-        const currentMonth = new Date();
-        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const dateRange = getSelectedMonthRange();
         
-        // Fetch feedback data without join, as user info is in the table
-        const { data: feedbackData, error } = await supabase
-            .from('app_3704573dd8_feedback')
-            .select('*')
-            .gte('created_at', firstDay.toISOString())
-            .order('created_at', { ascending: false })
-            .limit(10);
+        // Build query with optional date filtering
+        let query = supabase.from('app_3704573dd8_feedback').select('*');
+        
+        // Apply date filters only if not "All Time"
+        if (dateRange !== null) {
+            query = query.gte('created_at', dateRange.start.toISOString()).lte('created_at', dateRange.end.toISOString());
+        }
+        
+        const { data: feedbackData, error } = await query.order('created_at', { ascending: false }).limit(10);
 
         if (error) throw error;
 
         if (!feedbackData || feedbackData.length === 0) {
+            const periodText = dateRange === null ? 'in the system' : 'this month';
             problemsSection.innerHTML = `
                 <div class="problems-header">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -232,10 +329,10 @@ async function loadProblemsAndIssues() {
                         <line x1="12" y1="9" x2="12" y2="13"></line>
                         <line x1="12" y1="17" x2="12.01" y2="17"></line>
                     </svg>
-                    <h3>Problems & Issues This Month</h3>
+                    <h3>Problems & Issues</h3>
                 </div>
                 <div class="no-problems">
-                    <p>No problems or issues reported this month.</p>
+                    <p>No problems or issues reported ${periodText}.</p>
                 </div>
             `;
             return;
@@ -300,7 +397,7 @@ async function loadProblemsAndIssues() {
                     <line x1="12" y1="9" x2="12" y2="13"></line>
                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
-                <h3>Problems & Issues This Month</h3>
+                <h3>Problems & Issues</h3>
             </div>
             <div class="problems-list">
                 ${problemsHTML}
@@ -311,7 +408,7 @@ async function loadProblemsAndIssues() {
         console.error('Error loading problems:', error);
         problemsSection.innerHTML = `
             <div class="problems-header">
-                <h3>Problems & Issues This Month</h3>
+                <h3>Problems & Issues</h3>
             </div>
             <div class="error-message">Failed to load problems and issues: ${error.message}</div>
         `;
@@ -323,20 +420,23 @@ async function loadCropsPlanted() {
     const cropsContainer = document.getElementById('cropsPlantedList');
     
     try {
-        const currentMonth = new Date();
-        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const dateRange = getSelectedMonthRange();
         
-        // Fetch crops without join - just get all crop data
-        const { data: cropsData, error } = await supabase
-            .from('app_3704573dd8_user_crops')
-            .select('*')
-            .gte('created_at', firstDay.toISOString())
-            .order('created_at', { ascending: false });
+        // Build query with optional date filtering
+        let query = supabase.from('app_3704573dd8_user_crops').select('*');
+        
+        // Apply date filters only if not "All Time"
+        if (dateRange !== null) {
+            query = query.gte('created_at', dateRange.start.toISOString()).lte('created_at', dateRange.end.toISOString());
+        }
+        
+        const { data: cropsData, error } = await query.order('created_at', { ascending: false });
             
         if (error) throw error;
         
         if (!cropsData || cropsData.length === 0) {
-            cropsContainer.innerHTML = '<p class="no-data">No crops planted this month.</p>';
+            const periodText = dateRange === null ? 'in the system' : 'this month';
+            cropsContainer.innerHTML = `<p class="no-data">No crops planted ${periodText}.</p>`;
             return;
         }
         
@@ -362,7 +462,7 @@ async function loadCropsPlanted() {
             }
         }
         
-        const cropsHTML = cropsData.map(crop => {
+        const cropsHTML = await Promise.all(cropsData.map(async crop => {
             let userName = 'Unknown';
             let userEmail = 'N/A';
             
@@ -431,8 +531,46 @@ async function loadCropsPlanted() {
             // Get status
             const status = crop.status || 'active';
             
+            // Load crop image if available
+            let cropImageHTML = '';
+            if (crop.image_url) {
+                try {
+                    let imageUrl = crop.image_url;
+                    
+                    // Check if it's already a full URL
+                    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+                        // It's already a full URL, use it directly
+                        cropImageHTML = `
+                            <div class="crop-image-container" style="margin-bottom: 1rem;">
+                                <img src="${imageUrl}" alt="${escapeHtml(cropName)}" 
+                                     style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px;"
+                                     onerror="this.parentElement.style.display='none'">
+                            </div>
+                        `;
+                    } else {
+                        // It's a storage path, get public URL from Supabase storage
+                        const { data: urlData } = supabase.storage
+                            .from('crop-images')
+                            .getPublicUrl(imageUrl);
+                        
+                        if (urlData && urlData.publicUrl) {
+                            cropImageHTML = `
+                                <div class="crop-image-container" style="margin-bottom: 1rem;">
+                                    <img src="${urlData.publicUrl}" alt="${escapeHtml(cropName)}" 
+                                         style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px;"
+                                         onerror="this.parentElement.style.display='none'">
+                                </div>
+                            `;
+                        }
+                    }
+                } catch (imgError) {
+                    console.warn('Error loading crop image:', imgError);
+                }
+            }
+            
             return `
                 <div class="detail-card">
+                    ${cropImageHTML}
                     <div class="detail-header">
                         <h4>${escapeHtml(cropName)}</h4>
                         <span class="status-badge ${status.toLowerCase()}">${status.toUpperCase()}</span>
@@ -477,9 +615,9 @@ async function loadCropsPlanted() {
                     </div>
                 </div>
             `;
-        }).join('');
+        }));
         
-        cropsContainer.innerHTML = cropsHTML;
+        cropsContainer.innerHTML = (await Promise.all(cropsHTML)).join('');
         
     } catch (error) {
         console.error('Error loading crops:', error);
@@ -492,20 +630,23 @@ async function loadEquipmentRentals() {
     const rentalsContainer = document.getElementById('equipmentRentalsList');
     
     try {
-        const currentMonth = new Date();
-        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const dateRange = getSelectedMonthRange();
         
-        // Fetch rentals without join
-        const { data: rentalsData, error } = await supabase
-            .from('app_3704573dd8_member_rental_requests')
-            .select('*')
-            .gte('created_at', firstDay.toISOString())
-            .order('created_at', { ascending: false });
+        // Build query with optional date filtering
+        let query = supabase.from('app_3704573dd8_member_rental_requests').select('*');
+        
+        // Apply date filters only if not "All Time"
+        if (dateRange !== null) {
+            query = query.gte('created_at', dateRange.start.toISOString()).lte('created_at', dateRange.end.toISOString());
+        }
+        
+        const { data: rentalsData, error } = await query.order('created_at', { ascending: false });
             
         if (error) throw error;
         
         if (!rentalsData || rentalsData.length === 0) {
-            rentalsContainer.innerHTML = '<p class="no-data">No equipment rentals this month.</p>';
+            const periodText = dateRange === null ? 'in the system' : 'this month';
+            rentalsContainer.innerHTML = `<p class="no-data">No equipment rentals ${periodText}.</p>`;
             return;
         }
         
@@ -622,14 +763,32 @@ function getStatusBadge(status) {
 }
 
 function handleMonthChange() {
+    const monthFilter = document.getElementById('monthFilter');
+    window.selectedMonth = monthFilter.value;
     refreshReports();
 }
 
 async function refreshReports() {
-    await loadReportsSection();
+    // Only reload the data sections, not the entire page
+    await Promise.all([
+        loadSummaryStatistics(),
+        loadProblemsAndIssues(),
+        loadCropsPlanted(),
+        loadEquipmentRentals()
+    ]);
 }
 
 function printReport() {
+    // Update the data-date attribute before printing
+    const dashboardContent = document.querySelector('.dashboard-content');
+    const monthFilter = document.getElementById('monthFilter');
+    const selectedOption = monthFilter.options[monthFilter.selectedIndex];
+    const selectedMonth = selectedOption.text;
+    
+    if (dashboardContent) {
+        dashboardContent.setAttribute('data-date', `Report for ${selectedMonth} | Generated on ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`);
+    }
+    
     window.print();
 }
 
