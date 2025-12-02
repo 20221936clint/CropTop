@@ -6,6 +6,7 @@ let currentFeedback = null;
 // Initialize admin feedback section
 async function initializeAdminFeedback() {
     renderAdminFeedbackSection();
+    await populateFeedbackMonthFilter();
     await loadAllFeedback();
     setupAdminFeedbackEventListeners();
 }
@@ -22,6 +23,13 @@ function renderAdminFeedbackSection() {
             </div>
             
             <div class="feedback-filters">
+                <div class="filter-group">
+                    <label for="feedbackMonthFilter">Month</label>
+                    <select id="feedbackMonthFilter">
+                        <option value="all">All Months</option>
+                    </select>
+                </div>
+                
                 <div class="filter-group">
                     <label for="statusFilter">Status</label>
                     <select id="statusFilter">
@@ -101,12 +109,52 @@ function renderAdminFeedbackSection() {
     `;
 }
 
+// Populate month filter dropdown
+async function populateFeedbackMonthFilter() {
+    try {
+        const { data: feedbackList, error } = await supabase
+            .from('app_3704573dd8_feedback')
+            .select('created_at')
+            .eq('is_deleted_by_user', false)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const monthSet = new Set();
+        feedbackList.forEach(feedback => {
+            const date = new Date(feedback.created_at);
+            const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            monthSet.add(monthYear);
+        });
+        
+        const monthFilter = document.getElementById('feedbackMonthFilter');
+        const sortedMonths = Array.from(monthSet).sort().reverse();
+        
+        sortedMonths.forEach(monthYear => {
+            const [year, month] = monthYear.split('-');
+            const date = new Date(year, month - 1);
+            const monthName = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            
+            const option = document.createElement('option');
+            option.value = monthYear;
+            option.textContent = monthName;
+            monthFilter.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error populating month filter:', error);
+    }
+}
+
 function setupAdminFeedbackEventListeners() {
     // Filter change events
+    const monthFilter = document.getElementById('feedbackMonthFilter');
     const statusFilter = document.getElementById('statusFilter');
     const priorityFilter = document.getElementById('priorityFilter');
     const categoryFilter = document.getElementById('categoryFilter');
     
+    if (monthFilter) {
+        monthFilter.addEventListener('change', loadAllFeedback);
+    }
     if (statusFilter) {
         statusFilter.addEventListener('change', loadAllFeedback);
     }
@@ -153,6 +201,7 @@ async function loadAllFeedback() {
     
     try {
         // Get filter values
+        const monthFilter = document.getElementById('feedbackMonthFilter')?.value || 'all';
         const statusFilter = document.getElementById('statusFilter')?.value || 'all';
         const priorityFilter = document.getElementById('priorityFilter')?.value || 'all';
         const categoryFilter = document.getElementById('categoryFilter')?.value || 'all';
@@ -164,7 +213,18 @@ async function loadAllFeedback() {
             .eq('is_deleted_by_user', false)
             .order('created_at', { ascending: false });
         
-        // Apply filters
+        // Apply month filter
+        if (monthFilter !== 'all') {
+            const [year, month] = monthFilter.split('-');
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0, 23, 59, 59);
+            
+            query = query
+                .gte('created_at', startDate.toISOString())
+                .lte('created_at', endDate.toISOString());
+        }
+        
+        // Apply other filters
         if (statusFilter !== 'all') {
             query = query.eq('status', statusFilter);
         }

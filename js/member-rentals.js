@@ -30,6 +30,15 @@ async function loadMemberRentals() {
                     <small class="char-count"><span id="guidelinesCharCount">0</span> / 500 characters. Changes are auto-saved.</small>
                 </div>
             </div>
+            
+            <div class="filter-section" style="margin-bottom: 20px;">
+                <div class="filter-group">
+                    <label for="rentalsMonthFilter">Filter by Month:</label>
+                    <select id="rentalsMonthFilter" onchange="loadAllMemberRentals()">
+                        <option value="all">All Months</option>
+                    </select>
+                </div>
+            </div>
 
             <!-- Rentals Table -->
             <div class="rentals-table-wrapper">
@@ -43,11 +52,47 @@ async function loadMemberRentals() {
     // Load guidelines
     await loadMemberRentalGuidelines();
     
-    // Load rental requests
+    // Populate month filter and load rental requests
+    await populateRentalsMonthFilter();
     await loadAllMemberRentals();
     
     // Setup auto-save for guidelines
     setupGuidelinesAutoSave();
+}
+
+// Populate month filter dropdown
+async function populateRentalsMonthFilter() {
+    try {
+        const { data: rentals, error } = await supabase
+            .from('app_3704573dd8_member_rental_requests')
+            .select('created_at')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const monthSet = new Set();
+        rentals.forEach(rental => {
+            const date = new Date(rental.created_at);
+            const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            monthSet.add(monthYear);
+        });
+        
+        const monthFilter = document.getElementById('rentalsMonthFilter');
+        const sortedMonths = Array.from(monthSet).sort().reverse();
+        
+        sortedMonths.forEach(monthYear => {
+            const [year, month] = monthYear.split('-');
+            const date = new Date(year, month - 1);
+            const monthName = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            
+            const option = document.createElement('option');
+            option.value = monthYear;
+            option.textContent = monthName;
+            monthFilter.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error populating month filter:', error);
+    }
 }
 
 // Load Member Rental Guidelines
@@ -132,10 +177,25 @@ async function saveMemberRentalGuidelines(guidelines) {
 // Load All Member Rentals
 async function loadAllMemberRentals() {
     try {
-        const { data: rentals, error } = await supabase
+        const monthFilter = document.getElementById('rentalsMonthFilter')?.value || 'all';
+        
+        let query = supabase
             .from('app_3704573dd8_member_rental_requests')
             .select('*')
             .order('created_at', { ascending: false });
+        
+        // Apply month filter
+        if (monthFilter !== 'all') {
+            const [year, month] = monthFilter.split('-');
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0, 23, 59, 59);
+            
+            query = query
+                .gte('created_at', startDate.toISOString())
+                .lte('created_at', endDate.toISOString());
+        }
+        
+        const { data: rentals, error } = await query;
         
         if (error) throw error;
         
@@ -479,10 +539,25 @@ window.viewMemberRentalDetails = async function(rentalId) {
 // Print Member Rentals Report
 window.printMemberRentalsReport = async function() {
     try {
-        const { data: rentals, error } = await supabase
+        const monthFilter = document.getElementById('rentalsMonthFilter')?.value || 'all';
+        
+        let query = supabase
             .from('app_3704573dd8_member_rental_requests')
             .select('*')
             .order('created_at', { ascending: false });
+        
+        // Apply month filter
+        if (monthFilter !== 'all') {
+            const [year, month] = monthFilter.split('-');
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0, 23, 59, 59);
+            
+            query = query
+                .gte('created_at', startDate.toISOString())
+                .lte('created_at', endDate.toISOString());
+        }
+        
+        const { data: rentals, error } = await query;
         
         if (error) throw error;
         
@@ -493,6 +568,9 @@ window.printMemberRentalsReport = async function() {
             .single();
         
         const guidelinesText = guidelines?.guidelines || 'No guidelines set';
+        
+        const monthFilterEl = document.getElementById('rentalsMonthFilter');
+        const selectedMonth = monthFilterEl?.options[monthFilterEl.selectedIndex]?.text || 'All Months';
         
         // Create print window
         const printWindow = window.open('', '_blank');
@@ -602,6 +680,7 @@ window.printMemberRentalsReport = async function() {
                 <div class="header">
                     <h1>Member Equipment Rentals Report</h1>
                     <p>Generated on: ${new Date().toLocaleString('en-US')}</p>
+                    <p>Filter: ${selectedMonth}</p>
                     <p>Total Rentals: ${rentals?.length || 0}</p>
                 </div>
                 

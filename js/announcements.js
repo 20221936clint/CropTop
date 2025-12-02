@@ -19,6 +19,12 @@ async function loadAnnouncementsSection() {
             
             <div class="filter-section">
                 <div class="filter-group">
+                    <label for="announcementMonthFilter">Month:</label>
+                    <select id="announcementMonthFilter" onchange="filterAnnouncements()">
+                        <option value="all">All Months</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label for="categoryFilter">Category:</label>
                     <select id="categoryFilter" onchange="filterAnnouncements()">
                         <option value="all">All Categories</option>
@@ -47,7 +53,43 @@ async function loadAnnouncementsSection() {
         </div>
     `;
     
+    await populateAnnouncementMonthFilter();
     loadAnnouncementsList();
+}
+
+// Populate month filter dropdown
+async function populateAnnouncementMonthFilter() {
+    try {
+        const { data: announcements, error } = await supabase
+            .from('app_3704573dd8_announcements')
+            .select('created_at')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const monthSet = new Set();
+        announcements.forEach(announcement => {
+            const date = new Date(announcement.created_at);
+            const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            monthSet.add(monthYear);
+        });
+        
+        const monthFilter = document.getElementById('announcementMonthFilter');
+        const sortedMonths = Array.from(monthSet).sort().reverse();
+        
+        sortedMonths.forEach(monthYear => {
+            const [year, month] = monthYear.split('-');
+            const date = new Date(year, month - 1);
+            const monthName = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            
+            const option = document.createElement('option');
+            option.value = monthYear;
+            option.textContent = monthName;
+            monthFilter.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error populating month filter:', error);
+    }
 }
 
 // Load Announcements List
@@ -61,12 +103,41 @@ async function loadAnnouncementsList() {
         if (error) throw error;
         
         allAnnouncements = announcements || [];
-        displayAnnouncements(allAnnouncements);
+        filterAnnouncements();
         
     } catch (error) {
         console.error('Error loading announcements:', error);
         document.getElementById('announcementsListContainer').innerHTML = '<div class="error">Error loading announcements</div>';
     }
+}
+
+// Filter Announcements
+function filterAnnouncements() {
+    const monthFilter = document.getElementById('announcementMonthFilter')?.value || 'all';
+    const categoryFilter = document.getElementById('categoryFilter')?.value || 'all';
+    const priorityFilter = document.getElementById('priorityFilter')?.value || 'all';
+    
+    let filtered = allAnnouncements;
+    
+    // Apply month filter
+    if (monthFilter !== 'all') {
+        const [year, month] = monthFilter.split('-');
+        filtered = filtered.filter(a => {
+            const date = new Date(a.created_at);
+            const announcementMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            return announcementMonth === monthFilter;
+        });
+    }
+    
+    if (categoryFilter !== 'all') {
+        filtered = filtered.filter(a => a.category === categoryFilter);
+    }
+    
+    if (priorityFilter !== 'all') {
+        filtered = filtered.filter(a => a.priority === priorityFilter);
+    }
+    
+    displayAnnouncements(filtered);
 }
 
 // Display Announcements
@@ -116,24 +187,6 @@ function displayAnnouncements(announcements) {
             </div>
         </div>
     `).join('');
-}
-
-// Filter Announcements
-function filterAnnouncements() {
-    const categoryFilter = document.getElementById('categoryFilter').value;
-    const priorityFilter = document.getElementById('priorityFilter').value;
-    
-    let filtered = allAnnouncements;
-    
-    if (categoryFilter !== 'all') {
-        filtered = filtered.filter(a => a.category === categoryFilter);
-    }
-    
-    if (priorityFilter !== 'all') {
-        filtered = filtered.filter(a => a.priority === priorityFilter);
-    }
-    
-    displayAnnouncements(filtered);
 }
 
 // Open Add Announcement Modal

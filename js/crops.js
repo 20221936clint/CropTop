@@ -23,19 +23,67 @@ async function loadUserCrops() {
                     </button>
                 </div>
             </div>
+            
+            <div class="filter-section" style="margin-bottom: 20px;">
+                <div class="filter-group">
+                    <label for="cropsMonthFilter">Filter by Month:</label>
+                    <select id="cropsMonthFilter" onchange="loadUserCropsTable()">
+                        <option value="all">All Months</option>
+                    </select>
+                </div>
+            </div>
+            
             <div id="userCropsContainer">
                 <div class="loading">Loading crops...</div>
             </div>
         </div>
     `;
     
+    populateCropsMonthFilter();
     loadUserCropsTable();
+}
+
+// Populate month filter dropdown
+async function populateCropsMonthFilter() {
+    try {
+        const { data: crops, error } = await supabase
+            .from('app_3704573dd8_user_crops')
+            .select('created_at')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const monthSet = new Set();
+        crops.forEach(crop => {
+            const date = new Date(crop.created_at);
+            const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            monthSet.add(monthYear);
+        });
+        
+        const monthFilter = document.getElementById('cropsMonthFilter');
+        const sortedMonths = Array.from(monthSet).sort().reverse();
+        
+        sortedMonths.forEach(monthYear => {
+            const [year, month] = monthYear.split('-');
+            const date = new Date(year, month - 1);
+            const monthName = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            
+            const option = document.createElement('option');
+            option.value = monthYear;
+            option.textContent = monthName;
+            monthFilter.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error populating month filter:', error);
+    }
 }
 
 // Load User Crops Table
 async function loadUserCropsTable() {
     try {
-        const { data: crops, error } = await supabase
+        const monthFilter = document.getElementById('cropsMonthFilter')?.value || 'all';
+        
+        let query = supabase
             .from('app_3704573dd8_user_crops')
             .select(`
                 *,
@@ -46,6 +94,19 @@ async function loadUserCropsTable() {
                 )
             `)
             .order('created_at', { ascending: false });
+        
+        // Apply month filter
+        if (monthFilter !== 'all') {
+            const [year, month] = monthFilter.split('-');
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0, 23, 59, 59);
+            
+            query = query
+                .gte('created_at', startDate.toISOString())
+                .lte('created_at', endDate.toISOString());
+        }
+        
+        const { data: crops, error } = await query;
         
         const container = document.getElementById('userCropsContainer');
         
@@ -69,7 +130,7 @@ async function loadUserCropsTable() {
                         <th>Expected Harvest</th>
                         <th>Status</th>
                         <th>Notes</th>
-                        <th>Estimated Harvest Quantity</th>
+                        <th>Expected Harvest Quantity</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -210,6 +271,9 @@ function generatePrintWindow(printTable) {
     });
     
     const totalRows = printTable.querySelectorAll('tbody tr').length;
+    
+    const monthFilter = document.getElementById('cropsMonthFilter');
+    const selectedMonth = monthFilter?.options[monthFilter.selectedIndex]?.text || 'All Months';
     
     // Write the HTML content
     printWindow.document.write(`
@@ -403,6 +467,7 @@ function generatePrintWindow(printTable) {
             
             <div class="report-info">
                 <div><strong>Report Date:</strong> ${currentDate}</div>
+                <div><strong>Filter:</strong> ${selectedMonth}</div>
                 <div><strong>Total Crops:</strong> ${totalRows}</div>
             </div>
             
