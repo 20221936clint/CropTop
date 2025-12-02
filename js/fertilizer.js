@@ -77,7 +77,8 @@ async function loadDistributionTable() {
             <table class="distribution-table">
                 <thead>
                     <tr>
-                        <th>Photo</th>
+                        <th>Product Photo</th>
+                        <th>Received Photo</th>
                         <th>User</th>
                         <th>Fertilizer Type</th>
                         <th>Quantity</th>
@@ -91,10 +92,25 @@ async function loadDistributionTable() {
                     ${distributions.map(dist => `
                         <tr>
                             <td>
-                                ${dist.photo_url ? `
-                                    <img src="${dist.photo_url}" alt="Fertilizer" 
+                                ${dist.product_photo_url ? `
+                                    <img src="${dist.product_photo_url}" alt="Product" 
                                          style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer;"
-                                         onclick="viewFertilizerPhoto('${dist.photo_url}')">
+                                         onclick="viewFertilizerPhoto('${dist.product_photo_url}', 'Product Photo')">
+                                ` : `
+                                    <div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                        </svg>
+                                    </div>
+                                `}
+                            </td>
+                            <td>
+                                ${dist.received_photo_url ? `
+                                    <img src="${dist.received_photo_url}" alt="Received" 
+                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer;"
+                                         onclick="viewFertilizerPhoto('${dist.received_photo_url}', 'Received Photo')">
                                 ` : `
                                     <div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
@@ -118,12 +134,12 @@ async function loadDistributionTable() {
                             <td><span class="status-badge ${dist.status || 'completed'}">${dist.status || 'Completed'}</span></td>
                             <td>
                                 <div class="action-buttons-group">
-                                    <button class="action-btn-small edit" onclick="editDistributionPhoto('${dist.id}', '${dist.photo_url || ''}')">
+                                    <button class="action-btn-small edit" onclick="editDistributionPhotos('${dist.id}', '${dist.product_photo_url || ''}', '${dist.received_photo_url || ''}')">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                         </svg>
-                                        ${dist.photo_url ? 'Change' : 'Add'} Photo
+                                        Manage Photos
                                     </button>
                                     <button class="action-btn-small delete" onclick="deleteDistribution('${dist.id}')">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -147,18 +163,18 @@ async function loadDistributionTable() {
 }
 
 // View Fertilizer Photo in Modal
-function viewFertilizerPhoto(photoUrl) {
+function viewFertilizerPhoto(photoUrl, title = 'Fertilizer Photo') {
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'flex';
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
-                <h2>Fertilizer Photo</h2>
+                <h2>${title}</h2>
                 <button class="close-modal" onclick="this.closest('.modal').remove()">&times;</button>
             </div>
             <div class="modal-body" style="text-align: center;">
-                <img src="${photoUrl}" alt="Fertilizer" style="max-width: 100%; max-height: 70vh; border-radius: 8px;">
+                <img src="${photoUrl}" alt="${title}" style="max-width: 100%; max-height: 70vh; border-radius: 8px;">
             </div>
         </div>
     `;
@@ -171,47 +187,92 @@ function viewFertilizerPhoto(photoUrl) {
     });
 }
 
-// Edit Distribution Photo
-async function editDistributionPhoto(distributionId, currentPhotoUrl) {
+// Edit Distribution Photos - Now supports both product and received photos
+async function editDistributionPhotos(distributionId, currentProductPhotoUrl, currentReceivedPhotoUrl) {
     const modal = document.createElement('div');
     modal.id = 'editPhotoModal';
     modal.className = 'modal';
     modal.style.display = 'flex';
     modal.innerHTML = `
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h2>${currentPhotoUrl ? 'Change' : 'Add'} Fertilizer Photo</h2>
+                <h2>Manage Fertilizer Photos</h2>
                 <button class="close-modal" onclick="document.getElementById('editPhotoModal').remove()">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="editPhotoForm" class="photo-form">
                     <input type="hidden" id="editPhotoDistributionId" value="${distributionId}">
                     
-                    ${currentPhotoUrl ? `
-                        <div class="current-photo" style="margin-bottom: 1rem; text-align: center;">
-                            <p style="margin-bottom: 0.5rem; color: #666;">Current Photo:</p>
-                            <img src="${currentPhotoUrl}" alt="Current" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <!-- Product Photo Section -->
+                        <div class="photo-section">
+                            <h3 style="margin-bottom: 1rem; color: #2c3e50; display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                </svg>
+                                Product Photo
+                            </h3>
+                            
+                            ${currentProductPhotoUrl ? `
+                                <div class="current-photo" style="margin-bottom: 1rem; text-align: center;">
+                                    <p style="margin-bottom: 0.5rem; color: #666;">Current Photo:</p>
+                                    <img src="${currentProductPhotoUrl}" alt="Current Product" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+                                </div>
+                            ` : ''}
+                            
+                            <div class="form-group">
+                                <label for="productPhotoFile">Select Product Photo</label>
+                                <input type="file" id="productPhotoFile" name="productPhotoFile" accept="image/*">
+                                <small style="color: #666;">Photo of the actual fertilizer product</small>
+                            </div>
+                            
+                            <div class="preview-container" id="productPreviewContainer" style="display: none; margin-top: 1rem; text-align: center;">
+                                <p style="margin-bottom: 0.5rem; color: #666;">Preview:</p>
+                                <img id="productPhotoPreview" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+                            </div>
                         </div>
-                    ` : ''}
-                    
-                    <div class="form-group">
-                        <label for="photoFile">Select New Photo *</label>
-                        <input type="file" id="photoFile" name="photoFile" accept="image/*" required>
-                        <small style="color: #666;">Supported formats: JPG, PNG, GIF (Max 5MB)</small>
+                        
+                        <!-- Received Photo Section -->
+                        <div class="photo-section">
+                            <h3 style="margin-bottom: 1rem; color: #2c3e50; display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"></polyline>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                </svg>
+                                Received Photo
+                            </h3>
+                            
+                            ${currentReceivedPhotoUrl ? `
+                                <div class="current-photo" style="margin-bottom: 1rem; text-align: center;">
+                                    <p style="margin-bottom: 0.5rem; color: #666;">Current Photo:</p>
+                                    <img src="${currentReceivedPhotoUrl}" alt="Current Received" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+                                </div>
+                            ` : ''}
+                            
+                            <div class="form-group">
+                                <label for="receivedPhotoFile">Select Received Photo</label>
+                                <input type="file" id="receivedPhotoFile" name="receivedPhotoFile" accept="image/*">
+                                <small style="color: #666;">Photo showing delivery/receipt confirmation</small>
+                            </div>
+                            
+                            <div class="preview-container" id="receivedPreviewContainer" style="display: none; margin-top: 1rem; text-align: center;">
+                                <p style="margin-bottom: 0.5rem; color: #666;">Preview:</p>
+                                <img id="receivedPhotoPreview" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="preview-container" id="previewContainer" style="display: none; margin-top: 1rem; text-align: center;">
-                        <p style="margin-bottom: 0.5rem; color: #666;">Preview:</p>
-                        <img id="photoPreview" style="max-width: 100%; max-height: 300px; border-radius: 8px;">
+                    <div style="margin-top: 2rem; text-align: center;">
+                        <small style="color: #666;">Supported formats: JPG, PNG, GIF (Max 5MB each)</small>
                     </div>
                     
-                    <button type="submit" class="submit-btn">
+                    <button type="submit" class="submit-btn" style="margin-top: 1rem;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                             <polyline points="17 21 17 13 7 13 7 21"></polyline>
                             <polyline points="7 3 7 8 15 8"></polyline>
                         </svg>
-                        Upload Photo
+                        Upload Photos
                     </button>
                 </form>
             </div>
@@ -219,14 +280,27 @@ async function editDistributionPhoto(distributionId, currentPhotoUrl) {
     `;
     document.body.appendChild(modal);
     
-    // Preview handler
-    document.getElementById('photoFile').addEventListener('change', function(e) {
+    // Preview handler for product photo
+    document.getElementById('productPhotoFile').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                document.getElementById('photoPreview').src = e.target.result;
-                document.getElementById('previewContainer').style.display = 'block';
+                document.getElementById('productPhotoPreview').src = e.target.result;
+                document.getElementById('productPreviewContainer').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Preview handler for received photo
+    document.getElementById('receivedPhotoFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('receivedPhotoPreview').src = e.target.result;
+                document.getElementById('receivedPreviewContainer').style.display = 'block';
             };
             reader.readAsDataURL(file);
         }
@@ -236,7 +310,7 @@ async function editDistributionPhoto(distributionId, currentPhotoUrl) {
     document.getElementById('editPhotoForm').onsubmit = handlePhotoUpload;
 }
 
-// Handle Photo Upload
+// Handle Photo Upload - Updated to support both photos
 async function handlePhotoUpload(e) {
     e.preventDefault();
     
@@ -247,60 +321,103 @@ async function handlePhotoUpload(e) {
     
     try {
         const distributionId = document.getElementById('editPhotoDistributionId').value;
-        const fileInput = document.getElementById('photoFile');
-        const file = fileInput.files[0];
+        const productFileInput = document.getElementById('productPhotoFile');
+        const receivedFileInput = document.getElementById('receivedPhotoFile');
         
-        if (!file) {
-            throw new Error('Please select a photo');
+        const productFile = productFileInput.files[0];
+        const receivedFile = receivedFileInput.files[0];
+        
+        if (!productFile && !receivedFile) {
+            throw new Error('Please select at least one photo to upload');
         }
         
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
-            throw new Error('File size must be less than 5MB');
+        const updateData = {};
+        
+        // Upload product photo if selected
+        if (productFile) {
+            // Validate file size (5MB max)
+            if (productFile.size > 5 * 1024 * 1024) {
+                throw new Error('Product photo size must be less than 5MB');
+            }
+            
+            // Validate file type
+            if (!productFile.type.startsWith('image/')) {
+                throw new Error('Please select a valid image file for product photo');
+            }
+            
+            // Create unique filename
+            const fileExt = productFile.name.split('.').pop();
+            const fileName = `${distributionId}_product_${Date.now()}.${fileExt}`;
+            const filePath = `fertilizer/${fileName}`;
+            
+            // Upload to Supabase Storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('fertilizer-product-photos')
+                .upload(filePath, productFile, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+            
+            if (uploadError) throw uploadError;
+            
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from('fertilizer-product-photos')
+                .getPublicUrl(filePath);
+            
+            updateData.product_photo_url = urlData.publicUrl;
         }
         
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            throw new Error('Please select a valid image file');
+        // Upload received photo if selected
+        if (receivedFile) {
+            // Validate file size (5MB max)
+            if (receivedFile.size > 5 * 1024 * 1024) {
+                throw new Error('Received photo size must be less than 5MB');
+            }
+            
+            // Validate file type
+            if (!receivedFile.type.startsWith('image/')) {
+                throw new Error('Please select a valid image file for received photo');
+            }
+            
+            // Create unique filename
+            const fileExt = receivedFile.name.split('.').pop();
+            const fileName = `${distributionId}_received_${Date.now()}.${fileExt}`;
+            const filePath = `fertilizer/${fileName}`;
+            
+            // Upload to Supabase Storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('fertilizer-received-photos')
+                .upload(filePath, receivedFile, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+            
+            if (uploadError) throw uploadError;
+            
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from('fertilizer-received-photos')
+                .getPublicUrl(filePath);
+            
+            updateData.received_photo_url = urlData.publicUrl;
         }
         
-        // Create unique filename
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${distributionId}_${Date.now()}.${fileExt}`;
-        const filePath = `fertilizer/${fileName}`;
-        
-        // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('fertilizer-photos')
-            .upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: false
-            });
-        
-        if (uploadError) throw uploadError;
-        
-        // Get public URL
-        const { data: urlData } = supabase.storage
-            .from('fertilizer-photos')
-            .getPublicUrl(filePath);
-        
-        const photoUrl = urlData.publicUrl;
-        
-        // Update database with photo URL
+        // Update database with photo URLs
         const { error: updateError } = await supabase
             .from('app_3704573dd8_fertilizer_distribution')
-            .update({ photo_url: photoUrl })
+            .update(updateData)
             .eq('id', distributionId);
         
         if (updateError) throw updateError;
         
-        showNotification('Success', 'Photo uploaded successfully!', 'success');
+        showNotification('Success', 'Photos uploaded successfully!', 'success');
         document.getElementById('editPhotoModal').remove();
         loadDistributionTable();
         
     } catch (error) {
-        console.error('Error uploading photo:', error);
-        showNotification('Error', 'Failed to upload photo: ' + error.message, 'error');
+        console.error('Error uploading photos:', error);
+        showNotification('Error', 'Failed to upload photos: ' + error.message, 'error');
     } finally {
         submitBtn.innerHTML = originalContent;
         submitBtn.disabled = false;
@@ -404,21 +521,31 @@ async function deleteDistribution(distributionId) {
     if (!confirm('Are you sure you want to delete this distribution record? This action cannot be undone.')) return;
     
     try {
-        // Get the distribution to check if it has a photo
+        // Get the distribution to check if it has photos
         const { data: dist, error: fetchError } = await supabase
             .from('app_3704573dd8_fertilizer_distribution')
-            .select('photo_url')
+            .select('product_photo_url, received_photo_url')
             .eq('id', distributionId)
             .single();
         
         if (fetchError) throw fetchError;
         
-        // Delete photo from storage if exists
-        if (dist.photo_url) {
-            const path = dist.photo_url.split('/fertilizer-photos/')[1];
+        // Delete product photo from storage if exists
+        if (dist.product_photo_url) {
+            const path = dist.product_photo_url.split('/fertilizer-product-photos/')[1];
             if (path) {
                 await supabase.storage
-                    .from('fertilizer-photos')
+                    .from('fertilizer-product-photos')
+                    .remove([path]);
+            }
+        }
+        
+        // Delete received photo from storage if exists
+        if (dist.received_photo_url) {
+            const path = dist.received_photo_url.split('/fertilizer-received-photos/')[1];
+            if (path) {
+                await supabase.storage
+                    .from('fertilizer-received-photos')
                     .remove([path]);
             }
         }
