@@ -230,13 +230,6 @@
             <div class="modal-body">
                 <form id="addEquipmentForm" class="equipment-form">
                     <div class="form-group">
-                        <label for="equipmentPhoto">Equipment Photo</label>
-                        <input type="file" id="equipmentPhoto" name="equipmentPhoto" accept="image/jpeg,image/jpg,image/png,image/webp" onchange="previewAddPhoto(event)">
-                        <small style="color: #666; display: block; margin-top: 0.5rem;">Accepted formats: JPEG, PNG, WebP (Max 5MB)</small>
-                        <div id="addPhotoPreview" style="margin-top: 1rem;"></div>
-                    </div>
-                    
-                    <div class="form-group">
                         <label for="equipmentName">Equipment Name *</label>
                         <input type="text" id="equipmentName" name="equipmentName" required>
                     </div>
@@ -287,17 +280,6 @@
             <div class="modal-body">
                 <form id="editEquipmentForm" class="equipment-form">
                     <input type="hidden" id="editEquipmentId">
-                    
-                    <div class="form-group">
-                        <label>Current Photo</label>
-                        <div id="editPhotoPreview" style="margin-bottom: 1rem;"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editEquipmentPhoto">Upload New Photo (Optional)</label>
-                        <input type="file" id="editEquipmentPhoto" name="editEquipmentPhoto" accept="image/jpeg,image/jpg,image/png,image/webp" onchange="previewEditPhoto(event)">
-                        <small style="color: #666; display: block; margin-top: 0.5rem;">Accepted formats: JPEG, PNG, WebP (Max 5MB)</small>
-                    </div>
                     
                     <div class="form-group">
                         <label for="editEquipmentName">Equipment Name *</label>
@@ -360,10 +342,14 @@
                         <label for="distributionFertilizerType">Fertilizer Type *</label>
                         <select id="distributionFertilizerType" name="distributionFertilizerType" required>
                             <option value="">Select Type</option>
+                            <option value="Nitrogen">Nitrogen</option>
+                            <option value="Phosphorus">Phosphorus</option>
+                            <option value="Potassium">Potassium</option>
+                            <option value="NPK">NPK (Complete)</option>
+                            <option value="Organic">Organic</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
-                    
-                    <div id="fertilizerTypePreview"></div>
                     
                     <div class="form-group">
                         <label for="distributionQuantity">Quantity (kg) *</label>
@@ -386,88 +372,6 @@
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                         Add Distribution
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Fertilizer Type Modal -->
-    <div id="addFertilizerTypeModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Add Fertilizer Type</h2>
-                <button class="close-modal" onclick="closeAddFertilizerTypeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addFertilizerTypeForm" class="fertilizer-type-form" onsubmit="handleAddFertilizerType(event)">
-                    <div class="form-group">
-                        <label for="fertilizerTypePhoto">Fertilizer Photo</label>
-                        <input type="file" id="fertilizerTypePhoto" name="fertilizerTypePhoto" accept="image/jpeg,image/jpg,image/png,image/webp" onchange="previewAddTypePhoto(event)">
-                        <small style="color: #666; display: block; margin-top: 0.5rem;">Accepted formats: JPEG, PNG, WebP (Max 5MB)</small>
-                        <div id="addTypePhotoPreview" style="margin-top: 1rem;"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fertilizerTypeName">Fertilizer Name *</label>
-                        <input type="text" id="fertilizerTypeName" name="fertilizerTypeName" required placeholder="e.g., Urea, NPK 15-15-15">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fertilizerTypeDescription">Description</label>
-                        <textarea id="fertilizerTypeDescription" name="fertilizerTypeDescription" rows="3" placeholder="Brief description of the fertilizer type..."></textarea>
-                    </div>
-                    
-                    <button type="submit" class="submit-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        Add Fertilizer Type
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Fertilizer Type Modal -->
-    <div id="editFertilizerTypeModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Edit Fertilizer Type</h2>
-                <button class="close-modal" onclick="closeEditFertilizerTypeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="editFertilizerTypeForm" class="fertilizer-type-form" onsubmit="handleEditFertilizerType(event)">
-                    <input type="hidden" id="editFertilizerTypeId">
-                    
-                    <div class="form-group">
-                        <label>Current Photo</label>
-                        <div id="editTypePhotoPreview" style="margin-bottom: 1rem;"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editFertilizerTypePhoto">Upload New Photo (Optional)</label>
-                        <input type="file" id="editFertilizerTypePhoto" name="editFertilizerTypePhoto" accept="image/jpeg,image/jpg,image/png,image/webp" onchange="previewEditTypePhoto(event)">
-                        <small style="color: #666; display: block; margin-top: 0.5rem;">Accepted formats: JPEG, PNG, WebP (Max 5MB)</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editFertilizerTypeName">Fertilizer Name *</label>
-                        <input type="text" id="editFertilizerTypeName" name="editFertilizerTypeName" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editFertilizerTypeDescription">Description</label>
-                        <textarea id="editFertilizerTypeDescription" name="editFertilizerTypeDescription" rows="3"></textarea>
-                    </div>
-                    
-                    <button type="submit" class="submit-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                        Update Fertilizer Type
                     </button>
                 </form>
             </div>
@@ -737,7 +641,6 @@
     <script src="./js/crops.js"></script>
     <script src="./js/equipment.js"></script>
     <script src="./js/fertilizer.js"></script>
-    <script src="./js/fertilizer-types.js"></script>
     <script src="./js/announcements.js"></script>
     <script src="./js/admin-feedback.js"></script>
     <script src="./js/member-rentals.js"></script>
@@ -748,4 +651,4 @@
     <script src="./js/main.js"></script>
 </body>
 
-</html>
+</html> 
