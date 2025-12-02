@@ -60,6 +60,7 @@ async function loadUserCropsTable() {
             <table class="crops-table" id="cropsTableToPrint">
                 <thead>
                     <tr>
+                        <th>Photo</th>
                         <th>User</th>
                         <th>Crop Name</th>
                         <th>Variety</th>
@@ -74,6 +75,13 @@ async function loadUserCropsTable() {
                 <tbody>
                     ${crops.map(crop => `
                         <tr>
+                            <td>
+                                ${crop.photo_url ? `
+                                    <div class="crop-photo-thumbnail">
+                                        <img src="${crop.photo_url}" alt="${crop.crop_name}" onclick="showPhotoModal('${crop.photo_url}', '${crop.crop_name}')" style="cursor: pointer;" data-photo-url="${crop.photo_url}" />
+                                    </div>
+                                ` : '<span style="color: #999;">No photo</span>'}
+                            </td>
                             <td>
                                 <div class="user-info">
                                     <div class="user-name">${crop.app_3704573dd8_users?.full_name || 'N/A'}</div>
@@ -100,6 +108,31 @@ async function loadUserCropsTable() {
     }
 }
 
+// Show photo in modal
+window.showPhotoModal = function(photoUrl, cropName) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>${cropName}</h2>
+                <button class="close-modal" onclick="this.closest('.modal').remove()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <img src="${photoUrl}" alt="${cropName}" style="width: 100%; height: auto; display: block;" />
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    };
+};
+
 // Print Crops Table
 function printCropsTable() {
     const table = document.getElementById('cropsTableToPrint');
@@ -109,7 +142,64 @@ function printCropsTable() {
         return;
     }
     
-    // Create a new window for printing
+    // Clone the table to modify for printing
+    const printTable = table.cloneNode(true);
+    
+    // Convert all images to base64 for printing
+    const images = printTable.querySelectorAll('img[data-photo-url]');
+    let imagesLoaded = 0;
+    const totalImages = images.length;
+    
+    if (totalImages === 0) {
+        // No images to load, proceed with printing
+        generatePrintWindow(printTable);
+        return;
+    }
+    
+    // Convert each image to base64
+    images.forEach((img, index) => {
+        const photoUrl = img.getAttribute('data-photo-url');
+        
+        // Create a new image to load
+        const tempImg = new Image();
+        tempImg.crossOrigin = 'anonymous';
+        
+        tempImg.onload = function() {
+            try {
+                // Create canvas to convert to base64
+                const canvas = document.createElement('canvas');
+                canvas.width = tempImg.width;
+                canvas.height = tempImg.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(tempImg, 0, 0);
+                
+                // Convert to base64
+                const base64 = canvas.toDataURL('image/jpeg', 0.8);
+                img.src = base64;
+            } catch (e) {
+                console.error('Error converting image to base64:', e);
+            }
+            
+            imagesLoaded++;
+            if (imagesLoaded === totalImages) {
+                generatePrintWindow(printTable);
+            }
+        };
+        
+        tempImg.onerror = function() {
+            console.error('Error loading image:', photoUrl);
+            imagesLoaded++;
+            if (imagesLoaded === totalImages) {
+                generatePrintWindow(printTable);
+            }
+        };
+        
+        tempImg.src = photoUrl;
+    });
+}
+
+// Generate print window with the table
+function generatePrintWindow(printTable) {
     const printWindow = window.open('', '_blank');
     
     // Get current date for the report
@@ -118,6 +208,8 @@ function printCropsTable() {
         month: 'long', 
         day: 'numeric' 
     });
+    
+    const totalRows = printTable.querySelectorAll('tbody tr').length;
     
     // Write the HTML content
     printWindow.document.write(`
@@ -177,7 +269,7 @@ function printCropsTable() {
                     width: 100%;
                     border-collapse: collapse;
                     margin-top: 20px;
-                    font-size: 12px;
+                    font-size: 11px;
                 }
                 
                 thead {
@@ -186,23 +278,38 @@ function printCropsTable() {
                 }
                 
                 th, td {
-                    padding: 12px 8px;
+                    padding: 10px 6px;
                     text-align: left;
                     border: 1px solid #ddd;
+                    vertical-align: middle;
                 }
                 
                 th {
                     font-weight: bold;
                     text-transform: uppercase;
-                    font-size: 11px;
+                    font-size: 10px;
                 }
                 
                 tbody tr:nth-child(even) {
                     background-color: #f8f9fa;
                 }
                 
-                tbody tr:hover {
-                    background-color: #e9ecef;
+                .crop-photo-thumbnail {
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 6px;
+                    overflow: hidden;
+                    background: #f5f5f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .crop-photo-thumbnail img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
                 }
                 
                 .user-info {
@@ -212,17 +319,18 @@ function printCropsTable() {
                 .user-name {
                     font-weight: bold;
                     color: #2c3e50;
+                    font-size: 11px;
                 }
                 
                 .user-email {
-                    font-size: 10px;
+                    font-size: 9px;
                     color: #7f8c8d;
                 }
                 
                 .status-badge {
-                    padding: 4px 8px;
-                    border-radius: 12px;
-                    font-size: 10px;
+                    padding: 3px 6px;
+                    border-radius: 10px;
+                    font-size: 9px;
                     font-weight: bold;
                     text-transform: uppercase;
                     display: inline-block;
@@ -244,10 +352,9 @@ function printCropsTable() {
                 }
                 
                 .notes-cell {
-                    max-width: 200px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
+                    max-width: 150px;
+                    font-size: 10px;
+                    line-height: 1.3;
                 }
                 
                 .print-footer {
@@ -261,7 +368,7 @@ function printCropsTable() {
                 
                 @media print {
                     body {
-                        padding: 0;
+                        padding: 10px;
                     }
                     
                     .print-header {
@@ -280,6 +387,11 @@ function printCropsTable() {
                     thead {
                         display: table-header-group;
                     }
+                    
+                    .crop-photo-thumbnail {
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
                 }
             </style>
         </head>
@@ -291,10 +403,10 @@ function printCropsTable() {
             
             <div class="report-info">
                 <div><strong>Report Date:</strong> ${currentDate}</div>
-                <div><strong>Total Crops:</strong> ${table.querySelectorAll('tbody tr').length}</div>
+                <div><strong>Total Crops:</strong> ${totalRows}</div>
             </div>
             
-            ${table.outerHTML}
+            ${printTable.outerHTML}
             
             <div class="print-footer">
                 <p>Generated by CropTop Admin Dashboard | ${currentDate}</p>
@@ -306,9 +418,11 @@ function printCropsTable() {
     
     printWindow.document.close();
     
-    // Wait for content to load, then print
+    // Wait for content and images to load, then print
     printWindow.onload = function() {
-        printWindow.focus();
-        printWindow.print();
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+        }, 500);
     };
 }

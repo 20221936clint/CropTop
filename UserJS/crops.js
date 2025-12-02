@@ -51,6 +51,11 @@ async function loadMyCrops() {
                         <div class="crops-grid">
                             ${crops.map(crop => `
                                 <div class="crop-card">
+                                    ${crop.photo_url ? `
+                                        <div class="crop-photo">
+                                            <img src="${crop.photo_url}" alt="${crop.crop_name}" />
+                                        </div>
+                                    ` : ''}
                                     <div class="crop-header">
                                         <h3>${crop.crop_name}</h3>
                                         <span class="crop-status ${crop.status || 'active'}">${crop.status || 'active'}</span>
@@ -128,6 +133,20 @@ async function loadMyCrops() {
                             </div>
                         </div>
                         <form id="addCropForm" class="crop-form">
+                            <div class="form-group">
+                                <label for="cropPhoto">Crop Photo</label>
+                                <input type="file" id="cropPhoto" name="cropPhoto" accept="image/*">
+                                <div id="photoPreview" class="photo-preview" style="display: none;">
+                                    <img id="previewImage" src="" alt="Preview" />
+                                    <button type="button" class="remove-photo-btn" onclick="removePhotoPreview()">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <div class="form-group">
                                 <label for="cropName">Crop Name *</label>
                                 <input type="text" id="cropName" name="cropName" placeholder="e.g., Rice, Corn, Wheat" required>
@@ -219,6 +238,24 @@ async function loadMyCrops() {
                     }
                 });
             }
+            
+            // Add photo preview functionality
+            const photoInput = document.getElementById('cropPhoto');
+            if (photoInput) {
+                photoInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const preview = document.getElementById('photoPreview');
+                            const previewImage = document.getElementById('previewImage');
+                            previewImage.src = e.target.result;
+                            preview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
         }
         
     } catch (error) {
@@ -246,7 +283,14 @@ window.closeAddCropModal = function() {
     if (modal) {
         modal.style.display = 'none';
         document.getElementById('addCropForm').reset();
+        document.getElementById('photoPreview').style.display = 'none';
     }
+};
+
+// Remove photo preview
+window.removePhotoPreview = function() {
+    document.getElementById('cropPhoto').value = '';
+    document.getElementById('photoPreview').style.display = 'none';
 };
 
 // Handle Add Crop
@@ -291,6 +335,28 @@ async function handleAddCrop(e) {
             return;
         }
         
+        // Upload photo if provided
+        let photoUrl = null;
+        const photoFile = document.getElementById('cropPhoto').files[0];
+        if (photoFile) {
+            const fileExt = photoFile.name.split('.').pop();
+            const fileName = `${currentUser.user_id}/${Date.now()}.${fileExt}`;
+            
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('crop-photos')
+                .upload(fileName, photoFile);
+            
+            if (uploadError) {
+                console.error('Error uploading photo:', uploadError);
+                alert('Warning: Photo upload failed, but crop will be added without photo.');
+            } else {
+                const { data: urlData } = supabase.storage
+                    .from('crop-photos')
+                    .getPublicUrl(fileName);
+                photoUrl = urlData.publicUrl;
+            }
+        }
+        
         const formData = {
             user_id: currentUser.user_id,
             crop_name: document.getElementById('cropName').value,
@@ -301,6 +367,7 @@ async function handleAddCrop(e) {
             expected_harvest_quantity: parseFloat(document.getElementById('expectedHarvestQuantity').value) || null,
             harvest_unit: document.getElementById('harvestUnit').value || null,
             notes: document.getElementById('notes').value || null,
+            photo_url: photoUrl,
             status: 'active',
             created_at: new Date().toISOString()
         };
@@ -330,6 +397,26 @@ window.deleteCrop = async function(cropId) {
     if (!confirm('Are you sure you want to delete this crop?')) return;
     
     try {
+        // Get crop data to delete photo from storage
+        const { data: cropData, error: fetchError } = await supabase
+            .from('app_3704573dd8_user_crops')
+            .select('photo_url')
+            .eq('id', cropId)
+            .single();
+        
+        if (fetchError) throw fetchError;
+        
+        // Delete photo from storage if exists
+        if (cropData.photo_url) {
+            const photoPath = cropData.photo_url.split('/crop-photos/')[1];
+            if (photoPath) {
+                await supabase.storage
+                    .from('crop-photos')
+                    .remove([photoPath]);
+            }
+        }
+        
+        // Delete crop record
         const { error } = await supabase
             .from('app_3704573dd8_user_crops')
             .delete()
