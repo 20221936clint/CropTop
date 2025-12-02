@@ -172,6 +172,7 @@ async function loadEquipmentRentals() {
                         <table class="equipment-table">
                             <thead>
                                 <tr>
+                                    <th>Photo</th>
                                     <th>Equipment Name</th>
                                     <th>Type</th>
                                     <th>Rate/Day (₱)</th>
@@ -183,6 +184,20 @@ async function loadEquipmentRentals() {
                             <tbody>
                                 ${equipment.map(item => `
                                     <tr>
+                                        <td>
+                                            ${item.photo_url ? `
+                                                <img src="${item.photo_url}" alt="${item.equipment_name}" 
+                                                     style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
+                                            ` : `
+                                                <div style="width: 60px; height: 60px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0;">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                        <polyline points="21 15 16 10 5 21"></polyline>
+                                                    </svg>
+                                                </div>
+                                            `}
+                                        </td>
                                         <td><strong>${item.equipment_name}</strong></td>
                                         <td>${item.equipment_type}</td>
                                         <td>₱${parseFloat(item.member_rate).toFixed(2)}</td>

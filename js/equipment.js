@@ -60,7 +60,7 @@ async function loadEquipmentTable() {
                                 ${item.photo_url ? `
                                     <img src="${item.photo_url}" alt="${item.equipment_name}" 
                                          style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
-                                 : 
+                                ` : `
                                     <div style="width: 60px; height: 60px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0;">
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
                                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -214,8 +214,8 @@ async function handleAddEquipment(e) {
         if (photoInput.files && photoInput.files[0]) {
             const file = photoInput.files[0];
             const fileExt = file.name.split('.').pop();
-            const fileName = ${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt};
-            const filePath = ${fileName};
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `${fileName}`;
             
             // Upload to Supabase Storage
             const { data: uploadData, error: uploadError } = await supabase.storage
@@ -349,8 +349,8 @@ async function handleEditEquipment(e) {
         if (photoInput.files && photoInput.files[0]) {
             const file = photoInput.files[0];
             const fileExt = file.name.split('.').pop();
-            const fileName = ${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt};
-            const filePath = ${fileName};
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `${fileName}`;
             
             // Upload to Supabase Storage
             const { data: uploadData, error: uploadError } = await supabase.storage
@@ -647,7 +647,7 @@ function renderActiveRentalsTable() {
 function toggleAcceptRentals() {
     acceptRentals = document.getElementById('acceptRentalsToggle').checked;
     const status = acceptRentals ? 'enabled' : 'disabled';
-    showNotification('Settings Updated', Equipment rentals are now ${status}, 'success');
+    showNotification('Settings Updated', `Equipment rentals are now ${status}`, 'success');
 }
 
 // Approve Request
