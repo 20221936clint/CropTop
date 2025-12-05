@@ -26,39 +26,41 @@ async function loadDashboardOverview() {
             .select('*', { count: 'exact', head: true })
             .eq('status', 'PENDING');
         
-        // Fetch recent system activities
+        // Fetch recent system activities - 5 items per category
         const { data: recentUsers, error: recentUsersError } = await supabase
             .from('app_3704573dd8_users')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(2);
+            .limit(5);
         
         // Fetch recent crops WITHOUT join - get user info separately
         const { data: recentCrops, error: recentCropsError } = await supabase
             .from('app_3704573dd8_user_crops')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(2);
+            .limit(5);
         
         // Fetch recent rentals WITHOUT join - they already have user_name field
         const { data: recentRentals, error: recentRentalsError } = await supabase
             .from('app_3704573dd8_member_rental_requests')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(2);
+            .limit(5);
         
-        // Combine and sort all activities
-        const activities = [];
+        // Process activities by category
+        const userActivities = [];
+        const cropActivities = [];
+        const rentalActivities = [];
         
         if (recentUsers) {
-            recentUsers.forEach(user => {
-                activities.push({
+            for (const user of recentUsers) {
+                userActivities.push({
                     type: 'user',
                     icon: 'user',
                     text: `New user registered: ${user.full_name || 'Unknown User'}`,
                     date: user.created_at
                 });
-            });
+            }
         }
         
         if (recentCrops) {
@@ -75,7 +77,7 @@ async function loadDashboardOverview() {
                         userName = user.full_name;
                     }
                 }
-                activities.push({
+                cropActivities.push({
                     type: 'crop',
                     icon: 'crop',
                     text: `${userName} added crop: ${crop.crop_type || crop.crop_name}`,
@@ -85,20 +87,16 @@ async function loadDashboardOverview() {
         }
         
         if (recentRentals) {
-            recentRentals.forEach(rental => {
+            for (const rental of recentRentals) {
                 const userName = rental.user_name || 'Unknown User';
-                activities.push({
+                rentalActivities.push({
                     type: 'rental',
                     icon: 'equipment',
                     text: `${userName} requested equipment: ${rental.equipment_name}`,
                     date: rental.created_at
                 });
-            });
+            }
         }
-        
-        // Sort activities by date
-        activities.sort((a, b) => new Date(b.date) - new Date(a.date));
-        const topActivities = activities.slice(0, 6);
         
         contentContainer.innerHTML = `
             <div class="dashboard-content">
@@ -165,18 +163,77 @@ async function loadDashboardOverview() {
                     <!-- Recent System Activity -->
                     <div class="activity-card">
                         <h3 class="card-title">Recent System Activity</h3>
-                        <div class="activity-list">
-                            ${topActivities.length > 0 ? topActivities.map(activity => `
-                                <div class="activity-item">
-                                    <div class="activity-icon ${activity.icon}">
-                                        ${getActivityIcon(activity.type)}
+                        
+                        <!-- New Users Section -->
+                        <div class="activity-category">
+                            <h4 class="category-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                New Users
+                            </h4>
+                            <div class="activity-list">
+                                ${userActivities.length > 0 ? userActivities.map(activity => `
+                                    <div class="activity-item">
+                                        <div class="activity-icon ${activity.icon}">
+                                            ${getActivityIcon(activity.type)}
+                                        </div>
+                                        <div class="activity-details">
+                                            <p class="activity-text">${activity.text}</p>
+                                            <p class="activity-date">${formatDate(activity.date)}</p>
+                                        </div>
                                     </div>
-                                    <div class="activity-details">
-                                        <p class="activity-text">${activity.text}</p>
-                                        <p class="activity-date">${formatDate(activity.date)}</p>
+                                `).join('') : '<p class="no-activity">No recent users</p>'}
+                            </div>
+                        </div>
+
+                        <!-- Crops Section -->
+                        <div class="activity-category">
+                            <h4 class="category-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                                Recent Crops
+                            </h4>
+                            <div class="activity-list">
+                                ${cropActivities.length > 0 ? cropActivities.map(activity => `
+                                    <div class="activity-item">
+                                        <div class="activity-icon ${activity.icon}">
+                                            ${getActivityIcon(activity.type)}
+                                        </div>
+                                        <div class="activity-details">
+                                            <p class="activity-text">${activity.text}</p>
+                                            <p class="activity-date">${formatDate(activity.date)}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            `).join('') : '<p class="no-activity">No recent activity</p>'}
+                                `).join('') : '<p class="no-activity">No recent crops</p>'}
+                            </div>
+                        </div>
+
+                        <!-- Rentals Section -->
+                        <div class="activity-category">
+                            <h4 class="category-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7" width="20" height="10" rx="2"></rect>
+                                    <circle cx="7" cy="17" r="2"></circle>
+                                    <circle cx="17" cy="17" r="2"></circle>
+                                </svg>
+                                Recent Rentals
+                            </h4>
+                            <div class="activity-list">
+                                ${rentalActivities.length > 0 ? rentalActivities.map(activity => `
+                                    <div class="activity-item">
+                                        <div class="activity-icon ${activity.icon}">
+                                            ${getActivityIcon(activity.type)}
+                                        </div>
+                                        <div class="activity-details">
+                                            <p class="activity-text">${activity.text}</p>
+                                            <p class="activity-date">${formatDate(activity.date)}</p>
+                                        </div>
+                                    </div>
+                                `).join('') : '<p class="no-activity">No recent rentals</p>'}
+                            </div>
                         </div>
                     </div>
 
