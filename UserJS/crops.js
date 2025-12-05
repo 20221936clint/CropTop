@@ -2,6 +2,71 @@
 import { supabase } from './config.js';
 import { getCurrentUser } from './session.js';
 
+// Validate image file
+function validateImageFile(file) {
+    // Check file size (10MB max for better mobile compatibility)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+        throw new Error('File size must be less than 10MB');
+    }
+    
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type.toLowerCase())) {
+        throw new Error('Please upload a valid image file (JPEG, PNG, WebP, or GIF)');
+    }
+    
+    return true;
+}
+
+// Compress image before upload (helps with mobile uploads)
+async function compressImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // Calculate new dimensions
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = height * (maxWidth / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = width * (maxHeight / height);
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        resolve(new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    } else {
+                        reject(new Error('Image compression failed'));
+                    }
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => reject(new Error('Failed to load image'));
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+    });
+}
+
 // Load My Crops
 async function loadMyCrops() {
     const container = document.getElementById('contentContainer');
@@ -136,6 +201,7 @@ async function loadMyCrops() {
                             <div class="form-group">
                                 <label for="cropPhoto">Crop Photo</label>
                                 <input type="file" id="cropPhoto" name="cropPhoto" accept="image/*">
+                                <small style="color: #666; display: block; margin-top: 0.25rem;">Max 10MB. Supported: JPG, PNG, WebP, GIF</small>
                                 <div id="photoPreview" class="photo-preview" style="display: none;">
                                     <img id="previewImage" src="" alt="Preview" />
                                     <button type="button" class="remove-photo-btn" onclick="removePhotoPreview()">
@@ -239,20 +305,32 @@ async function loadMyCrops() {
                 });
             }
             
-            // Add photo preview functionality
+            // Add photo preview functionality with validation
             const photoInput = document.getElementById('cropPhoto');
             if (photoInput) {
                 photoInput.addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const preview = document.getElementById('photoPreview');
-                            const previewImage = document.getElementById('previewImage');
-                            previewImage.src = e.target.result;
-                            preview.style.display = 'block';
-                        };
-                        reader.readAsDataURL(file);
+                        try {
+                            validateImageFile(file);
+                            
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const preview = document.getElementById('photoPreview');
+                                const previewImage = document.getElementById('previewImage');
+                                previewImage.src = e.target.result;
+                                preview.style.display = 'block';
+                            };
+                            reader.onerror = function() {
+                                alert('Error reading file. Please try again.');
+                                photoInput.value = '';
+                            };
+                            reader.readAsDataURL(file);
+                        } catch (error) {
+                            alert(error.message);
+                            photoInput.value = '';
+                            document.getElementById('photoPreview').style.display = 'none';
+                        }
                     }
                 });
             }
@@ -339,21 +417,57 @@ async function handleAddCrop(e) {
         let photoUrl = null;
         const photoFile = document.getElementById('cropPhoto').files[0];
         if (photoFile) {
-            const fileExt = photoFile.name.split('.').pop();
-            const fileName = `${currentUser.user_id}/${Date.now()}.${fileExt}`;
-            
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('crop-photos')
-                .upload(fileName, photoFile);
-            
-            if (uploadError) {
-                console.error('Error uploading photo:', uploadError);
-                alert('Warning: Photo upload failed, but crop will be added without photo.');
-            } else {
-                const { data: urlData } = supabase.storage
-                    .from('crop-photos')
-                    .getPublicUrl(fileName);
-                photoUrl = urlData.publicUrl;
+            try {
+                // Validate file
+                validateImageFile(photoFile);
+                
+                // Compress image
+                const compressedFile = await compressImage(photoFile);
+                
+                const fileExt = 'jpg'; // Always use jpg after compression
+                const fileName = `${currentUser.user_id}/crop_${Date.now()}.${fileExt}`;
+                
+                // Upload with retry logic
+                let uploadSuccess = false;
+                let retryCount = 0;
+                const maxRetries = 3;
+                
+                while (!uploadSuccess && retryCount < maxRetries) {
+                    try {
+                        const { data: uploadData, error: uploadError } = await supabase.storage
+                            .from('crop-photos')
+                            .upload(fileName, compressedFile, {
+                                cacheControl: '3600',
+                                upsert: false,
+                                contentType: 'image/jpeg'
+                            });
+                        
+                        if (uploadError) {
+                            throw uploadError;
+                        }
+                        
+                        const { data: urlData } = supabase.storage
+                            .from('crop-photos')
+                            .getPublicUrl(fileName);
+                        photoUrl = urlData.publicUrl;
+                        uploadSuccess = true;
+                    } catch (uploadError) {
+                        retryCount++;
+                        console.error(`Upload attempt ${retryCount} failed:`, uploadError);
+                        
+                        if (retryCount >= maxRetries) {
+                            console.error('Photo upload failed after multiple attempts:', uploadError);
+                            alert('Warning: Photo upload failed, but crop will be added without photo. Error: ' + uploadError.message);
+                            break;
+                        }
+                        
+                        // Wait before retry
+                        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                    }
+                }
+            } catch (photoError) {
+                console.error('Error processing photo:', photoError);
+                alert('Warning: Photo processing failed, but crop will be added without photo. Error: ' + photoError.message);
             }
         }
         
