@@ -106,37 +106,96 @@ async function loadEquipmentTable() {
     }
 }
 
+// Validate image file
+function validateImageFile(file) {
+    // Check file size (10MB max for better mobile compatibility)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+        throw new Error('File size must be less than 10MB');
+    }
+    
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type.toLowerCase())) {
+        throw new Error('Please upload a valid image file (JPEG, PNG, WebP, or GIF)');
+    }
+    
+    return true;
+}
+
+// Compress image before upload (helps with mobile uploads)
+async function compressImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // Calculate new dimensions
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = height * (maxWidth / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = width * (maxHeight / height);
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        resolve(new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    } else {
+                        reject(new Error('Image compression failed'));
+                    }
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => reject(new Error('Failed to load image'));
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+    });
+}
+
 // Preview photo for Add Equipment
 window.previewAddPhoto = function(event) {
     const file = event.target.files[0];
     const previewContainer = document.getElementById('addPhotoPreview');
     
     if (file) {
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('File size must be less than 5MB');
+        try {
+            validateImageFile(file);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewContainer.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview" 
+                         style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                `;
+            };
+            reader.onerror = function() {
+                previewContainer.innerHTML = '<p style="color: red;">Error reading file</p>';
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            alert(error.message);
             event.target.value = '';
             previewContainer.innerHTML = '';
-            return;
         }
-        
-        // Validate file type
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        if (!validTypes.includes(file.type)) {
-            alert('Please upload a valid image file (JPEG, PNG, or WebP)');
-            event.target.value = '';
-            previewContainer.innerHTML = '';
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            previewContainer.innerHTML = `
-                <img src="${e.target.result}" alt="Preview" 
-                     style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
-            `;
-        };
-        reader.readAsDataURL(file);
     } else {
         previewContainer.innerHTML = '';
     }
@@ -148,32 +207,27 @@ window.previewEditPhoto = function(event) {
     const previewContainer = document.getElementById('editPhotoPreview');
     
     if (file) {
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('File size must be less than 5MB');
+        try {
+            validateImageFile(file);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewContainer.innerHTML = `
+                    <div style="margin-bottom: 1rem;">
+                        <p style="margin-bottom: 0.5rem; font-weight: 500;">New Photo Preview:</p>
+                        <img src="${e.target.result}" alt="Preview" 
+                             style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                    </div>
+                `;
+            };
+            reader.onerror = function() {
+                previewContainer.innerHTML = '<p style="color: red;">Error reading file</p>';
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            alert(error.message);
             event.target.value = '';
-            return;
         }
-        
-        // Validate file type
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        if (!validTypes.includes(file.type)) {
-            alert('Please upload a valid image file (JPEG, PNG, or WebP)');
-            event.target.value = '';
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            previewContainer.innerHTML = `
-                <div style="margin-bottom: 1rem;">
-                    <p style="margin-bottom: 0.5rem; font-weight: 500;">New Photo Preview:</p>
-                    <img src="${e.target.result}" alt="Preview" 
-                         style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
-                </div>
-            `;
-        };
-        reader.readAsDataURL(file);
     }
 };
 
@@ -213,29 +267,55 @@ async function handleAddEquipment(e) {
         const photoInput = document.getElementById('equipmentPhoto');
         if (photoInput.files && photoInput.files[0]) {
             const file = photoInput.files[0];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            
+            // Validate file
+            validateImageFile(file);
+            
+            // Compress image
+            const compressedFile = await compressImage(file);
+            
+            const fileExt = 'jpg'; // Always use jpg after compression
+            const fileName = `equipment_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
             const filePath = `${fileName}`;
             
-            // Upload to Supabase Storage
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('equipment-photos')
-                .upload(filePath, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
+            // Upload to Supabase Storage with retry logic
+            let uploadSuccess = false;
+            let retryCount = 0;
+            const maxRetries = 3;
             
-            if (uploadError) {
-                console.error('Upload error:', uploadError);
-                throw new Error('Failed to upload photo: ' + uploadError.message);
+            while (!uploadSuccess && retryCount < maxRetries) {
+                try {
+                    const { data: uploadData, error: uploadError } = await supabase.storage
+                        .from('equipment-photos')
+                        .upload(filePath, compressedFile, {
+                            cacheControl: '3600',
+                            upsert: false,
+                            contentType: 'image/jpeg'
+                        });
+                    
+                    if (uploadError) {
+                        throw uploadError;
+                    }
+                    
+                    // Get public URL
+                    const { data: urlData } = supabase.storage
+                        .from('equipment-photos')
+                        .getPublicUrl(filePath);
+                    
+                    photoUrl = urlData.publicUrl;
+                    uploadSuccess = true;
+                } catch (uploadError) {
+                    retryCount++;
+                    console.error(`Upload attempt ${retryCount} failed:`, uploadError);
+                    
+                    if (retryCount >= maxRetries) {
+                        throw new Error('Failed to upload photo after multiple attempts. Please check your internet connection and try again.');
+                    }
+                    
+                    // Wait before retry
+                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                }
             }
-            
-            // Get public URL
-            const { data: urlData } = supabase.storage
-                .from('equipment-photos')
-                .getPublicUrl(filePath);
-            
-            photoUrl = urlData.publicUrl;
         }
         
         const formData = {
@@ -348,29 +428,54 @@ async function handleEditEquipment(e) {
         const photoInput = document.getElementById('editEquipmentPhoto');
         if (photoInput.files && photoInput.files[0]) {
             const file = photoInput.files[0];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            
+            // Validate file
+            validateImageFile(file);
+            
+            // Compress image
+            const compressedFile = await compressImage(file);
+            
+            const fileExt = 'jpg';
+            const fileName = `equipment_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
             const filePath = `${fileName}`;
             
-            // Upload to Supabase Storage
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('equipment-photos')
-                .upload(filePath, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
+            // Upload with retry logic
+            let uploadSuccess = false;
+            let retryCount = 0;
+            const maxRetries = 3;
             
-            if (uploadError) {
-                console.error('Upload error:', uploadError);
-                throw new Error('Failed to upload photo: ' + uploadError.message);
+            while (!uploadSuccess && retryCount < maxRetries) {
+                try {
+                    const { data: uploadData, error: uploadError } = await supabase.storage
+                        .from('equipment-photos')
+                        .upload(filePath, compressedFile, {
+                            cacheControl: '3600',
+                            upsert: false,
+                            contentType: 'image/jpeg'
+                        });
+                    
+                    if (uploadError) {
+                        throw uploadError;
+                    }
+                    
+                    // Get public URL
+                    const { data: urlData } = supabase.storage
+                        .from('equipment-photos')
+                        .getPublicUrl(filePath);
+                    
+                    updateData.photo_url = urlData.publicUrl;
+                    uploadSuccess = true;
+                } catch (uploadError) {
+                    retryCount++;
+                    console.error(`Upload attempt ${retryCount} failed:`, uploadError);
+                    
+                    if (retryCount >= maxRetries) {
+                        throw new Error('Failed to upload photo after multiple attempts. Please check your internet connection and try again.');
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                }
             }
-            
-            // Get public URL
-            const { data: urlData } = supabase.storage
-                .from('equipment-photos')
-                .getPublicUrl(filePath);
-            
-            updateData.photo_url = urlData.publicUrl;
         }
         
         const { error } = await supabase
