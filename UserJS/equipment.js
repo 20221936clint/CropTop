@@ -71,14 +71,14 @@ async function loadEquipmentRentals() {
                     <h3 style="margin-bottom: 1.5rem; color: var(--text-dark); font-size: 1.25rem;">My Rental Requests</h3>
                     ${userRentals && userRentals.length > 0 ? `
                         <div style="overflow-x: auto;">
-                            <table class="equipment-table">
+                            <table class="equipment-table rental-requests-table">
                                 <thead>
                                     <tr>
                                         <th>Equipment</th>
-                                        <th>Type</th>
-                                        <th>Start Date</th>
-                                        <th>End Date</th>
-                                        <th>Days</th>
+                                        <th class="hide-mobile">Type</th>
+                                        <th class="hide-mobile">Start Date</th>
+                                        <th class="hide-mobile">End Date</th>
+                                        <th class="hide-mobile">Days</th>
                                         <th>Total Cost</th>
                                         <th>Status</th>
                                         <th>Actions</th>
@@ -86,12 +86,21 @@ async function loadEquipmentRentals() {
                                 </thead>
                                 <tbody>
                                     ${userRentals.map(rental => `
-                                        <tr>
-                                            <td><strong>${rental.equipment_name}</strong></td>
-                                            <td>${rental.equipment_type}</td>
-                                            <td>${new Date(rental.start_date).toLocaleDateString()}</td>
-                                            <td>${new Date(rental.end_date).toLocaleDateString()}</td>
-                                            <td>${rental.total_days} days</td>
+                                        <tr data-rental-id="${rental.id}" class="rental-row">
+                                            <td class="equipment-name-cell" onclick="toggleRentalDetails('${rental.id}')">
+                                                <strong>
+                                                    ${rental.equipment_name}
+                                                    <span class="expand-indicator">
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                                        </svg>
+                                                    </span>
+                                                </strong>
+                                            </td>
+                                            <td class="hide-mobile">${rental.equipment_type}</td>
+                                            <td class="hide-mobile">${new Date(rental.start_date).toLocaleDateString()}</td>
+                                            <td class="hide-mobile">${new Date(rental.end_date).toLocaleDateString()}</td>
+                                            <td class="hide-mobile">${rental.total_days} days</td>
                                             <td><strong>₱${parseFloat(rental.total_cost).toFixed(2)}</strong></td>
                                             <td><span class="status-badge ${rental.status.toLowerCase()}">${rental.status}</span></td>
                                             <td>
@@ -153,6 +162,26 @@ async function loadEquipmentRentals() {
                                                             View Reason
                                                         </button>
                                                     ` : '-'}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="rental-details-mobile" id="details-${rental.id}">
+                                            <td colspan="8">
+                                                <div class="rental-detail-row">
+                                                    <span class="rental-detail-label">Type:</span>
+                                                    <span class="rental-detail-value">${rental.equipment_type}</span>
+                                                </div>
+                                                <div class="rental-detail-row">
+                                                    <span class="rental-detail-label">Start Date:</span>
+                                                    <span class="rental-detail-value">${new Date(rental.start_date).toLocaleDateString()}</span>
+                                                </div>
+                                                <div class="rental-detail-row">
+                                                    <span class="rental-detail-label">End Date:</span>
+                                                    <span class="rental-detail-value">${new Date(rental.end_date).toLocaleDateString()}</span>
+                                                </div>
+                                                <div class="rental-detail-row">
+                                                    <span class="rental-detail-label">Days:</span>
+                                                    <span class="rental-detail-value">${rental.total_days} days</span>
                                                 </div>
                                             </td>
                                         </tr>
@@ -346,6 +375,33 @@ async function loadEquipmentRentals() {
         `;
     }
 }
+
+// Toggle rental details on mobile
+window.toggleRentalDetails = function(rentalId) {
+    // Only toggle on mobile screens
+    if (window.innerWidth > 768) return;
+    
+    const detailsRow = document.getElementById(`details-${rentalId}`);
+    const mainRow = document.querySelector(`tr[data-rental-id="${rentalId}"]`);
+    
+    if (detailsRow && mainRow) {
+        const isActive = detailsRow.classList.contains('active');
+        
+        // Close all other expanded rows
+        document.querySelectorAll('.rental-details-mobile.active').forEach(row => {
+            row.classList.remove('active');
+        });
+        document.querySelectorAll('.rental-row.expanded').forEach(row => {
+            row.classList.remove('expanded');
+        });
+        
+        // Toggle current row
+        if (!isActive) {
+            detailsRow.classList.add('active');
+            mainRow.classList.add('expanded');
+        }
+    }
+};
 
 // Toggle rental actions dropdown
 window.toggleRentalActionsDropdown = function(event, rentalId) {
