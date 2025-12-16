@@ -14,6 +14,7 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    flex-wrap: wrap;
 }
 
 .fertilizer-item:hover {
@@ -38,6 +39,7 @@
 
 .fertilizer-details {
     flex: 1;
+    min-width: 200px;
 }
 
 .fertilizer-type {
@@ -51,12 +53,73 @@
     gap: 0.5rem;
     color: #666;
     font-size: 0.9rem;
+    flex-wrap: wrap;
 }
 
 .fertilizer-purpose {
     color: #888;
     font-size: 0.85rem;
     margin-top: 0.25rem;
+}
+
+/* Status badge positioning fix for mobile */
+.fertilizer-item .status-badge {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Responsive adjustments for mobile screens */
+@media (max-width: 768px) {
+    .fertilizer-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .fertilizer-item .status-badge {
+        align-self: flex-end;
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+    
+    .fertilizer-details {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .fertilizer-info {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .fertilizer-item {
+        padding: 0.875rem;
+    }
+    
+    .fertilizer-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .fertilizer-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .fertilizer-type {
+        font-size: 1rem;
+    }
+    
+    .fertilizer-info {
+        font-size: 0.8rem;
+        gap: 0.4rem;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+    }
 }
 
 /* Membership Container Styles */
