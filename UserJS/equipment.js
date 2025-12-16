@@ -194,57 +194,108 @@ async function loadEquipmentRentals() {
                     `}
                 </div>
                 
-                <!-- Available Equipment Table -->
-                <div id="availableEquipmentContainer" style="background: var(--white); border-radius: 12px; padding: 1.5rem; box-shadow: var(--card-shadow); overflow-x: auto;">
+                <!-- Available Equipment Section -->
+                <div id="availableEquipmentContainer" style="background: var(--white); border-radius: 12px; padding: 1.5rem; box-shadow: var(--card-shadow);">
                     <h3 style="margin-bottom: 1.5rem; color: var(--text-dark); font-size: 1.25rem;">Available Equipment</h3>
                     ${equipment && equipment.length > 0 ? `
-                        <table class="equipment-table">
-                            <thead>
-                                <tr>
-                                    <th>Photo</th>
-                                    <th>Equipment Name</th>
-                                    <th>Type</th>
-                                    <th>Rate/Day (₱)</th>
-                                    <th>Operator Rate/Day (₱)</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${equipment.map(item => `
+                        <!-- Desktop Table View -->
+                        <div class="equipment-table-view">
+                            <table class="equipment-table">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            ${item.photo_url ? `
-                                                <img src="${item.photo_url}" alt="${item.equipment_name}" 
-                                                     style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
-                                            ` : `
-                                                <div style="width: 60px; height: 60px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0;">
-                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-                                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                                        <polyline points="21 15 16 10 5 21"></polyline>
-                                                    </svg>
-                                                </div>
-                                            `}
-                                        </td>
-                                        <td><strong>${item.equipment_name}</strong></td>
-                                        <td>${item.equipment_type}</td>
-                                        <td>₱${parseFloat(item.member_rate).toFixed(2)}</td>
-                                        <td>₱${parseFloat(item.operator_rate).toFixed(2)}</td>
-                                        <td><span class="status-badge available">${item.status}</span></td>
-                                        <td>
-                                            <button class="action-btn-small view" onclick="openRequestModal('${item.id}', '${item.equipment_name}', '${item.equipment_type}', ${item.member_rate}, ${item.operator_rate})">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                </svg>
-                                                Request
-                                            </button>
-                                        </td>
+                                        <th>Photo</th>
+                                        <th>Equipment Name</th>
+                                        <th>Type</th>
+                                        <th>Rate/Day (₱)</th>
+                                        <th>Operator Rate/Day (₱)</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
                                     </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    ${equipment.map(item => `
+                                        <tr>
+                                            <td>
+                                                ${item.photo_url ? `
+                                                    <img src="${item.photo_url}" alt="${item.equipment_name}" 
+                                                         style="width: 120px; height: 120px; object-fit: contain; border-radius: 8px; border: 2px solid #e0e0e0; background: #ffffff;">
+                                                ` : `
+                                                    <div style="width: 120px; height: 120px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0;">
+                                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                                        </svg>
+                                                    </div>
+                                                `}
+                                            </td>
+                                            <td><strong>${item.equipment_name}</strong></td>
+                                            <td>${item.equipment_type}</td>
+                                            <td>₱${parseFloat(item.member_rate).toFixed(2)}</td>
+                                            <td>₱${parseFloat(item.operator_rate).toFixed(2)}</td>
+                                            <td><span class="status-badge available">${item.status}</span></td>
+                                            <td>
+                                                <button class="action-btn-small view" onclick="openRequestModal('${item.id}', '${item.equipment_name}', '${item.equipment_type}', ${item.member_rate}, ${item.operator_rate})">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                    </svg>
+                                                    Request
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Mobile Card View -->
+                        <div class="equipment-cards-view">
+                            ${equipment.map(item => `
+                                <div class="equipment-card-mobile">
+                                    <div class="equipment-card-image">
+                                        ${item.photo_url ? `
+                                            <img src="${item.photo_url}" alt="${item.equipment_name}">
+                                        ` : `
+                                            <div class="equipment-card-placeholder">
+                                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                                </svg>
+                                            </div>
+                                        `}
+                                    </div>
+                                    <div class="equipment-card-content">
+                                        <div class="equipment-card-header">
+                                            <h4 class="equipment-card-title">${item.equipment_name}</h4>
+                                            <span class="status-badge available">${item.status}</span>
+                                        </div>
+                                        <div class="equipment-card-info">
+                                            <div class="equipment-card-info-item">
+                                                <span class="info-label">Type:</span>
+                                                <span class="info-value">${item.equipment_type}</span>
+                                            </div>
+                                            <div class="equipment-card-info-item">
+                                                <span class="info-label">Rate/Day:</span>
+                                                <span class="info-value">₱${parseFloat(item.member_rate).toFixed(2)}</span>
+                                            </div>
+                                            <div class="equipment-card-info-item">
+                                                <span class="info-label">Operator Rate/Day:</span>
+                                                <span class="info-value">₱${parseFloat(item.operator_rate).toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                        <button class="equipment-card-request-btn" onclick="openRequestModal('${item.id}', '${item.equipment_name}', '${item.equipment_type}', ${item.member_rate}, ${item.operator_rate})">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            </svg>
+                                            Request Equipment
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
                     ` : `
                         <div class="no-data">No equipment available at this time. Please check back later.</div>
                     `}
