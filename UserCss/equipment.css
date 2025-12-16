@@ -165,8 +165,6 @@
 
 .equipment-table tbody tr:hover {
     background: #f8f9ff;
-    transform: scale(1.01);
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
 }
 
 .equipment-table tbody tr:last-child {
@@ -182,6 +180,69 @@
 .equipment-table tbody td strong {
     color: #1a202c;
     font-weight: 600;
+}
+
+/* Mobile expandable row details */
+.rental-details-mobile {
+    display: none;
+    background: #f8f9ff;
+    border-top: 2px solid #667eea;
+}
+
+.rental-details-mobile td {
+    padding: 0 !important;
+}
+
+.rental-details-mobile.active {
+    display: table-row;
+}
+
+.rental-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.rental-detail-row:last-child {
+    border-bottom: none;
+}
+
+.rental-detail-label {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 0.875rem;
+}
+
+.rental-detail-value {
+    color: #2c3e50;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+/* Expand indicator */
+.expand-indicator {
+    display: none;
+    width: 16px;
+    height: 16px;
+    margin-left: 0.5rem;
+    transition: transform 0.3s ease;
+    vertical-align: middle;
+}
+
+.expand-indicator svg {
+    width: 100%;
+    height: 100%;
+    stroke: #667eea;
+}
+
+.rental-row.expanded .expand-indicator {
+    transform: rotate(180deg);
+}
+
+/* Equipment name cell - clickable on mobile */
+.equipment-name-cell {
+    cursor: default;
 }
 
 /* Status Badge Enhancements */
@@ -301,22 +362,89 @@
     }
 }
 
+/* Mobile View - Show only Equipment, Total Cost, Status, Actions */
 @media (max-width: 768px) {
-    .equipment-table {
-        display: block;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap;
+    /* Hide Type, Start Date, End Date, Days columns */
+    .equipment-table .hide-mobile {
+        display: none;
+    }
+    
+    /* Show expand indicator on mobile */
+    .expand-indicator {
+        display: inline-block;
+    }
+    
+    /* Make equipment name cell clickable on mobile */
+    .rental-requests-table .equipment-name-cell {
+        cursor: pointer;
+        user-select: none;
+    }
+    
+    .rental-requests-table .equipment-name-cell:active {
+        background: #e8ecff;
     }
     
     .equipment-table thead th,
     .equipment-table tbody td {
-        padding: 0.625rem 0.5rem;
-        font-size: 0.75rem;
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
     }
     
     .action-btn-small {
         padding: 0.4rem 0.75rem;
         font-size: 0.75rem;
+    }
+    
+    .status-badge {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.7rem;
+    }
+    
+    /* Expandable details container */
+    .rental-details-mobile td > div {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .equipment-table thead th {
+        padding: 0.625rem 0.4rem;
+        font-size: 0.7rem;
+    }
+    
+    .equipment-table tbody td {
+        padding: 0.625rem 0.4rem;
+        font-size: 0.7rem;
+    }
+    
+    .action-btn-small {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.65rem;
+        gap: 0.25rem;
+    }
+    
+    .action-btn-small svg {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.65rem;
+    }
+    
+    .rental-detail-row {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .rental-detail-label,
+    .rental-detail-value {
+        font-size: 0.75rem;
+    }
+    
+    .expand-indicator {
+        width: 14px;
+        height: 14px;
     }
 }
