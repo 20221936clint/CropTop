@@ -85,14 +85,7 @@ async function loadUserCropsTable() {
         
         let query = supabase
             .from('app_3704573dd8_user_crops')
-            .select(`
-                *,
-                app_3704573dd8_users (
-                    full_name,
-                    username,
-                    email
-                )
-            `)
+            .select('*')
             .order('created_at', { ascending: false });
         
         // Apply month filter
@@ -116,6 +109,28 @@ async function loadUserCropsTable() {
             container.innerHTML = '<div class="no-data">No crops submitted by users yet</div>';
             return;
         }
+        
+        // Manually fetch related users (no FK constraint exists between these tables)
+        const userIds = [...new Set(crops.map(c => c.user_id).filter(Boolean))];
+        let usersMap = {};
+        if (userIds.length > 0) {
+            const { data: users, error: usersError } = await supabase
+                .from('app_3704573dd8_users')
+                .select('id, full_name, username, email')
+                .in('id', userIds);
+            
+            if (!usersError && users) {
+                usersMap = users.reduce((acc, u) => {
+                    acc[u.id] = u;
+                    return acc;
+                }, {});
+            }
+        }
+        
+        // Attach user info to each crop so existing rendering code keeps working
+        crops.forEach(crop => {
+            crop.app_3704573dd8_users = usersMap[crop.user_id] || null;
+        });
         
         container.innerHTML = `
             <table class="crops-table" id="cropsTableToPrint">
