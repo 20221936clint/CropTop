@@ -187,12 +187,24 @@ window.loadAnalyticsSection = async function() {
         </div>
     `;
 
-    // Load Chart.js if not already loaded
+    // Load Chart.js if not already loaded (use local copy to avoid Tracking Prevention blocking CDN)
     if (typeof Chart === 'undefined') {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+        script.src = 'js/vendor/chart.umd.min.js';
         script.onload = async () => {
             await loadAllAnalytics();
+        };
+        script.onerror = () => {
+            console.error('Failed to load Chart.js from local path. Falling back to CDN.');
+            const fallback = document.createElement('script');
+            fallback.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+            fallback.onload = async () => {
+                await loadAllAnalytics();
+            };
+            fallback.onerror = () => {
+                console.error('Chart.js failed to load from both local and CDN sources.');
+            };
+            document.head.appendChild(fallback);
         };
         document.head.appendChild(script);
     } else {

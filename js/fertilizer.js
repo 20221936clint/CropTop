@@ -52,16 +52,10 @@ async function loadFertilizerDistribution() {
 // Load Distribution Table
 async function loadDistributionTable() {
     try {
+        // Fetch distributions (without FK embedding, since no FK constraint exists)
         const { data: distributions, error } = await supabase
             .from('app_3704573dd8_fertilizer_distribution')
-            .select(`
-                *,
-                app_3704573dd8_users (
-                    full_name,
-                    username,
-                    email
-                )
-            `)
+            .select('*')
             .order('distribution_date', { ascending: false });
         
         const container = document.getElementById('distributionTableContainer');
@@ -72,6 +66,28 @@ async function loadDistributionTable() {
             container.innerHTML = '<div class="no-data">No fertilizer distributions found</div>';
             return;
         }
+        
+        // Manually fetch the related users to simulate the join
+        const userIds = [...new Set(distributions.map(d => d.user_id).filter(Boolean))];
+        let usersMap = {};
+        if (userIds.length > 0) {
+            const { data: users, error: usersError } = await supabase
+                .from('app_3704573dd8_users')
+                .select('id, full_name, username, email')
+                .in('id', userIds);
+            
+            if (!usersError && users) {
+                usersMap = users.reduce((acc, u) => {
+                    acc[u.id] = u;
+                    return acc;
+                }, {});
+            }
+        }
+        
+        // Attach user info to each distribution so existing rendering code keeps working
+        distributions.forEach(dist => {
+            dist.app_3704573dd8_users = usersMap[dist.user_id] || null;
+        });
         
         container.innerHTML = `
             <table class="distribution-table">
