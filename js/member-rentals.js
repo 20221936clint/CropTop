@@ -749,7 +749,8 @@ window.printMemberRentalsReport = async function() {
 // Helper function to show modal
 function showModal(title, content) {
     const modal = document.createElement('div');
-    modal.className = 'modal active';
+    modal.className = 'modal';
+    modal.style.display = 'flex';
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">

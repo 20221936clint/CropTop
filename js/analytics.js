@@ -3,11 +3,23 @@ window.loadAnalyticsSection = async function() {
     const contentContainer = document.getElementById('contentContainer');
     
     // Get current date
-    const currentDate = new Date().toLocaleDateString('en-US', {
+    const now = new Date();
+    const currentDate = now.toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric'
     });
+
+    // Generate dynamic month options from September 2025 to current month
+    const monthOptions = generateMonthOptions();
+    // Preserve previously selected month if available, otherwise default to current month
+    const previouslySelected = window._analyticsSelectedMonth || null;
+    const optionsHTML = monthOptions.map(opt => {
+        const selected = previouslySelected
+            ? (opt.value === previouslySelected ? ' selected' : '')
+            : (opt.isCurrent ? ' selected' : '');
+        return `<option value="${opt.value}"${selected}>${opt.label}</option>`;
+    }).join('\n');
     
     contentContainer.innerHTML = `
         <div class="dashboard-content analytics-content" data-date="${currentDate}">
@@ -15,12 +27,7 @@ window.loadAnalyticsSection = async function() {
                 <h2 class="section-title">CropTop - Analytics</h2>
                 <div class="header-actions">
                     <select id="analyticsMonthFilter" class="month-filter" onchange="handleAnalyticsMonthChange()">
-                        <option value="2025-11">November 2025</option>
-                        <option value="2025-10">October 2025</option>
-                        <option value="2025-09">September 2025</option>
-                        <option value="2025-08">August 2025</option>
-                        <option value="2025-07">July 2025</option>
-                        <option value="2025-06">June 2025</option>
+                        ${optionsHTML}
                     </select>
                     <button class="action-btn blue" onclick="refreshAnalytics()">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -212,6 +219,112 @@ window.loadAnalyticsSection = async function() {
     }
 }
 
+// ========== HELPER: Generate dynamic month options from Sep 2025 to current month ==========
+function generateMonthOptions() {
+    const options = [];
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0-indexed
+
+    // Start from September 2025
+    let startYear = 2025;
+    let startMonth = 8; // September is index 8
+
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    let year = startYear;
+    let month = startMonth;
+
+    while (year < currentYear || (year === currentYear && month <= currentMonth)) {
+        const value = `${year}-${String(month + 1).padStart(2, '0')}`;
+        const label = `${monthNames[month]} ${year}`;
+        const isCurrent = (year === currentYear && month === currentMonth);
+        options.push({ value, label, isCurrent });
+
+        month++;
+        if (month > 11) {
+            month = 0;
+            year++;
+        }
+    }
+
+    // Reverse so newest month is first in dropdown
+    options.reverse();
+    return options;
+}
+
+// ========== HELPER: Get the selected month value from dropdown ==========
+function getSelectedMonth() {
+    const filter = document.getElementById('analyticsMonthFilter');
+    if (filter) return filter.value;
+    // Fallback to current month
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// ========== HELPER: Get date range for a given month value (e.g. "2026-04") ==========
+function getMonthDateRange(monthValue) {
+    const [year, month] = monthValue.split('-').map(Number);
+    const firstDay = new Date(year, month - 1, 1);
+    // Last moment of the month
+    const lastDay = new Date(year, month, 0, 23, 59, 59, 999);
+    return {
+        start: firstDay.toISOString(),
+        end: lastDay.toISOString(),
+        firstDay,
+        lastDay
+    };
+}
+
+// ========== HELPER: Generate the last N months (including selected) for chart labels ==========
+function getChartMonthRange() {
+    const options = [];
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // Start from September 2025 up to current month
+    let startYear = 2025;
+    let startMonth = 8; // September
+
+    const shortMonthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    let year = startYear;
+    let month = startMonth;
+
+    while (year < currentYear || (year === currentYear && month <= currentMonth)) {
+        const value = `${year}-${String(month + 1).padStart(2, '0')}`;
+        const label = `${shortMonthNames[month]} ${year}`;
+        options.push({ value, label });
+
+        month++;
+        if (month > 11) {
+            month = 0;
+            year++;
+        }
+    }
+
+    return options;
+}
+
+// ========== HELPER: Get full date range for all chart months ==========
+function getFullChartDateRange() {
+    const months = getChartMonthRange();
+    if (months.length === 0) {
+        return { start: new Date().toISOString(), end: new Date().toISOString() };
+    }
+    const firstMonth = months[0].value;
+    const lastMonth = months[months.length - 1].value;
+    const [fy, fm] = firstMonth.split('-').map(Number);
+    const [ly, lm] = lastMonth.split('-').map(Number);
+    const start = new Date(fy, fm - 1, 1).toISOString();
+    const end = new Date(ly, lm, 0, 23, 59, 59, 999).toISOString();
+    return { start, end };
+}
+
 // Print Analytics Function - Make it globally accessible
 window.printAnalytics = function() {
     window.print();
@@ -219,11 +332,16 @@ window.printAnalytics = function() {
 
 // Make handleAnalyticsMonthChange globally accessible
 window.handleAnalyticsMonthChange = function() {
-    refreshAnalytics();
+    // Save the selected month so it persists across refreshes
+    const selected = getSelectedMonth();
+    window._analyticsSelectedMonth = selected;
+    // Reload all analytics data with the new month
+    loadAllAnalytics();
 }
 
 // Make refreshAnalytics globally accessible
 window.refreshAnalytics = async function() {
+    window._analyticsSelectedMonth = getSelectedMonth();
     await loadAnalyticsSection();
 }
 
@@ -240,17 +358,18 @@ async function loadAllAnalytics() {
     ]);
 }
 
-// Load Analytics Summary
+// Load Analytics Summary - now uses selected month
 async function loadAnalyticsSummary() {
     try {
-        const currentMonth = new Date();
-        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const selectedMonth = getSelectedMonth();
+        const { start, end } = getMonthDateRange(selectedMonth);
         
-        // Fetch total revenue from rentals
+        // Fetch total revenue from rentals for selected month
         const { data: rentalsData } = await supabase
             .from('app_3704573dd8_member_rental_requests')
             .select('total_cost')
-            .gte('created_at', firstDay.toISOString());
+            .gte('created_at', start)
+            .lte('created_at', end);
         
         const totalRevenue = rentalsData?.reduce((sum, rental) => sum + (parseFloat(rental.total_cost) || 0), 0) || 0;
         document.getElementById('totalRevenue').textContent = `₱${totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -273,11 +392,12 @@ async function loadAnalyticsSummary() {
         const utilization = ((rentedEquipment / totalEquipment) * 100).toFixed(1);
         document.getElementById('equipmentUtilization').textContent = `${utilization}%`;
         
-        // Calculate crop success rate
+        // Calculate crop success rate for selected month
         const { data: cropsData } = await supabase
             .from('app_3704573dd8_user_crops')
             .select('id, status')
-            .gte('created_at', firstDay.toISOString());
+            .gte('created_at', start)
+            .lte('created_at', end);
         
         const totalCrops = cropsData?.length || 1;
         const successfulCrops = cropsData?.filter(c => c.status === 'HARVESTED' || c.status === 'COMPLETED').length || 0;
@@ -289,21 +409,20 @@ async function loadAnalyticsSummary() {
     }
 }
 
-// Load Crop Types Bar Chart (Most to Least Common with Monthly Comparison)
+// Load Crop Types Bar Chart (Most to Least Common with Monthly Comparison) - DYNAMIC
 async function loadCropTypesByMonthChart() {
     try {
-        const months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
-        const monthValues = ['2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11'];
+        const chartMonths = getChartMonthRange();
+        const monthLabels = chartMonths.map(m => m.label);
+        const monthValues = chartMonths.map(m => m.value);
         
-        // Optimization: Fetch all data in one request using crop_name field
-        const startDate = '2025-06-01T00:00:00.000Z';
-        const endDate = '2025-11-30T23:59:59.999Z';
+        const { start, end } = getFullChartDateRange();
 
         const { data: allCropsData, error } = await supabase
             .from('app_3704573dd8_user_crops')
             .select('crop_name, variety, created_at')
-            .gte('created_at', startDate)
-            .lte('created_at', endDate);
+            .gte('created_at', start)
+            .lte('created_at', end);
 
         if (error) throw error;
 
@@ -316,15 +435,12 @@ async function loadCropTypesByMonthChart() {
 
         if (allCropsData) {
             allCropsData.forEach(crop => {
-                // Use crop_name as the primary identifier
                 const cropType = crop.crop_name || 'Unknown';
                 const date = new Date(crop.created_at);
                 const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 
                 if (monthlyData[monthKey]) {
-                    // Total count
                     cropTypeTotals[cropType] = (cropTypeTotals[cropType] || 0) + 1;
-                    // Monthly count
                     monthlyData[monthKey][cropType] = (monthlyData[monthKey][cropType] || 0) + 1;
                 }
             });
@@ -333,11 +449,10 @@ async function loadCropTypesByMonthChart() {
         // Sort crop types by total count (most to least common)
         const sortedCropTypes = Object.entries(cropTypeTotals)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 10) // Limit to top 10 crop types
+            .slice(0, 10)
             .map(([cropType]) => cropType);
 
         if (sortedCropTypes.length === 0) {
-            console.log('No crop data found for chart');
             const ctx = document.getElementById('cropsChart');
             if (ctx) {
                 const parent = ctx.parentElement;
@@ -346,23 +461,27 @@ async function loadCropTypesByMonthChart() {
             return;
         }
 
-        // Create datasets for each month
-        const datasets = [];
+        // Color palette for months
         const colors = [
             'rgba(34, 197, 94, 0.7)',   // green
             'rgba(59, 130, 246, 0.7)',  // blue
             'rgba(251, 146, 60, 0.7)',  // orange
             'rgba(168, 85, 247, 0.7)',  // purple
             'rgba(236, 72, 153, 0.7)',  // pink
-            'rgba(234, 179, 8, 0.7)'    // yellow
+            'rgba(234, 179, 8, 0.7)',   // yellow
+            'rgba(239, 68, 68, 0.7)',   // red
+            'rgba(14, 165, 233, 0.7)',  // cyan
+            'rgba(99, 102, 241, 0.7)',  // indigo
+            'rgba(20, 184, 166, 0.7)'   // teal
         ];
 
+        const datasets = [];
         monthValues.forEach((monthValue, i) => {
             const monthCounts = monthlyData[monthValue];
             const data = sortedCropTypes.map(type => monthCounts[type] || 0);
             
             datasets.push({
-                label: months[i],
+                label: monthLabels[i],
                 data: data,
                 backgroundColor: colors[i % colors.length],
                 borderColor: colors[i % colors.length].replace('0.7', '1'),
@@ -372,7 +491,6 @@ async function loadCropTypesByMonthChart() {
 
         const ctx = document.getElementById('cropsChart');
         if (ctx) {
-            // Destroy existing chart if any to prevent "Canvas is already in use" error
             const existingChart = Chart.getChart(ctx);
             if (existingChart) existingChart.destroy();
 
@@ -417,20 +535,20 @@ async function loadCropTypesByMonthChart() {
     }
 }
 
-// Load Equipment Rentals Revenue Bar Chart (Monthly)
+// Load Equipment Rentals Revenue Bar Chart (Monthly) - DYNAMIC
 async function loadRevenueBarChart() {
     try {
-        const months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
-        const monthValues = ['2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11'];
+        const chartMonths = getChartMonthRange();
+        const monthLabels = chartMonths.map(m => m.label);
+        const monthValues = chartMonths.map(m => m.value);
         
-        const startDate = '2025-06-01T00:00:00.000Z';
-        const endDate = '2025-11-30T23:59:59.999Z';
+        const { start, end } = getFullChartDateRange();
 
         const { data: rentalsData, error } = await supabase
             .from('app_3704573dd8_member_rental_requests')
             .select('total_cost, created_at')
-            .gte('created_at', startDate)
-            .lte('created_at', endDate);
+            .gte('created_at', start)
+            .lte('created_at', end);
 
         if (error) throw error;
 
@@ -457,7 +575,7 @@ async function loadRevenueBarChart() {
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: months,
+                    labels: monthLabels,
                     datasets: [{
                         label: 'Revenue (₱)',
                         data: revenues,
@@ -503,10 +621,9 @@ async function loadRevenueBarChart() {
     }
 }
 
-// Load Equipment Performance Comparison Bar Chart (Monthly)
+// Load Equipment Performance Comparison Bar Chart (Monthly) - DYNAMIC
 async function loadEquipmentPerformanceBarChart() {
     try {
-        // Get all equipment - FIXED: removed 'name' column, only select 'id' and 'equipment_name'
         const { data: equipmentData, error: eqError } = await supabase
             .from('app_3704573dd8_equipment')
             .select('id, equipment_name');
@@ -514,23 +631,21 @@ async function loadEquipmentPerformanceBarChart() {
         if (eqError) throw eqError;
         if (!equipmentData || equipmentData.length === 0) return;
 
-        const months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
-        const monthValues = ['2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11'];
+        const chartMonths = getChartMonthRange();
+        const monthLabels = chartMonths.map(m => m.label);
+        const monthValues = chartMonths.map(m => m.value);
         
-        const startDate = '2025-06-01T00:00:00.000Z';
-        const endDate = '2025-11-30T23:59:59.999Z';
+        const { start, end } = getFullChartDateRange();
 
-        // Get all rentals in one go
         const { data: rentalsData, error: rentError } = await supabase
             .from('app_3704573dd8_member_rental_requests')
             .select('equipment_id, created_at')
-            .gte('created_at', startDate)
-            .lte('created_at', endDate);
+            .gte('created_at', start)
+            .lte('created_at', end);
 
         if (rentError) throw rentError;
 
         // Process rentals
-        // Map: equipmentId -> { '2025-06': count, ... }
         const equipmentRentals = {};
         equipmentData.forEach(eq => {
             equipmentRentals[eq.id] = {};
@@ -549,7 +664,6 @@ async function loadEquipmentPerformanceBarChart() {
             });
         }
         
-        // Create datasets for each equipment
         const datasets = [];
         const colors = [
             'rgba(239, 68, 68, 0.7)',   // red
@@ -585,7 +699,7 @@ async function loadEquipmentPerformanceBarChart() {
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: months,
+                    labels: monthLabels,
                     datasets: datasets
                 },
                 options: {
@@ -616,18 +730,19 @@ async function loadEquipmentPerformanceBarChart() {
     }
 }
 
-// Load Revenue Analytics
+// Load Revenue Analytics - now uses selected month
 async function loadRevenueAnalytics() {
     const container = document.getElementById('revenueAnalyticsContent');
     
     try {
-        const currentMonth = new Date();
-        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const selectedMonth = getSelectedMonth();
+        const { start, end } = getMonthDateRange(selectedMonth);
         
         const { data: rentalsData } = await supabase
             .from('app_3704573dd8_member_rental_requests')
             .select('*')
-            .gte('created_at', firstDay.toISOString())
+            .gte('created_at', start)
+            .lte('created_at', end)
             .order('created_at', { ascending: true });
         
         if (!rentalsData || rentalsData.length === 0) {
@@ -696,25 +811,26 @@ async function loadEquipmentPerformance() {
     }
 }
 
-// Load Crop Analytics
+// Load Crop Analytics - now uses selected month
 async function loadCropAnalytics() {
     const container = document.getElementById('cropAnalyticsContent');
     
     try {
-        const currentMonth = new Date();
-        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const selectedMonth = getSelectedMonth();
+        const { start, end } = getMonthDateRange(selectedMonth);
         
         const { data: cropsData } = await supabase
             .from('app_3704573dd8_user_crops')
             .select('*')
-            .gte('created_at', firstDay.toISOString());
+            .gte('created_at', start)
+            .lte('created_at', end);
         
         if (!cropsData || cropsData.length === 0) {
             container.innerHTML = '<p class="no-data">No crop data available for this month.</p>';
             return;
         }
         
-        // Count crops by crop_name (matching the crops.js structure)
+        // Count crops by crop_name
         const cropsByType = {};
         cropsData.forEach(crop => {
             const cropType = crop.crop_name || 'Unknown';
