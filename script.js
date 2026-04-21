@@ -163,21 +163,27 @@ class Carousel {
                     title: 'Grow Smart. Harvest Better.',
                     description: 'Track crops, forecast yields, and cooperative operations in one comprehensive system designed for modern agriculture.',
                     primaryCTA: 'Get Started',
-                    secondaryCTA: 'Learn More'
+                    primaryLink: '#contact',
+                    secondaryCTA: 'Learn More',
+                    secondaryLink: '#about'
                 },
                 {
                     image: '/images/AgricultureManagement.jpg',
                     title: 'Comprehensive Agricultural Management',
                     description: 'Everything you need to manage your agricultural cooperative efficiently with modern technology and data-driven insights.',
                     primaryCTA: 'Explore Features',
-                    secondaryCTA: 'Watch Demo'
+                    primaryLink: '#features',
+                    secondaryCTA: 'Watch Demo',
+                    secondaryLink: '#about'
                 },
                 {
                     image: 'https://hglvjxnyiazwdgotrfia.supabase.co/storage/v1/object/sign/Images/empowering.avif?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81OGYzZTdlZC04NTkzLTRiNGYtOWJhZS00NzYxN2E1MzNjOGEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJJbWFnZXMvZW1wb3dlcmluZy5hdmlmIiwiaWF0IjoxNzYyODY1NjcwLCJleHAiOjE3OTQ0MDE2NzB9.pTyPz311aANmFTzcL58uebxpQVkl3n3kOFiMLWitKqE',
                     title: 'Empower Your Cooperative',
                     description: 'Join our fellow farmers using CropTop to improve the management of crops, rentals of equipment, and maximize yields.',
                     primaryCTA: 'Join Now',
-                    secondaryCTA: 'Contact Us'
+                    primaryLink: './user-login.html',
+                    secondaryCTA: 'Contact Us',
+                    secondaryLink: '#contact'
                 }
             ];
             console.log('Using fallback carousel images');
@@ -215,7 +221,9 @@ class Carousel {
                 title: item.title || 'Grow Smart. Harvest Better.',
                 description: item.description || 'Track crops, forecast yields, and streamline operations.',
                 primaryCTA: item.primary_cta || 'Get Started',
-                secondaryCTA: item.secondary_cta || 'Learn More'
+                primaryLink: item.primary_link || '#contact',
+                secondaryCTA: item.secondary_cta || 'Learn More',
+                secondaryLink: item.secondary_link || '#about'
             }));
         } catch (error) {
             console.error('Supabase error:', error);
@@ -231,13 +239,13 @@ class Carousel {
                     <h1>${slide.title}</h1>
                     <p>${slide.description}</p>
                     <div class="carousel-buttons">
-                        <a href="#get-started" class="carousel-cta primary">
+                        <a href="${slide.primaryLink || '#contact'}" class="carousel-cta primary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                             </svg>
                             ${slide.primaryCTA}
                         </a>
-                        <a href="#learn-more" class="carousel-cta secondary">
+                        <a href="${slide.secondaryLink || '#about'}" class="carousel-cta secondary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <polygon points="10 8 16 12 10 16 10 8"></polygon>
@@ -410,13 +418,14 @@ function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
+            // Skip empty hashes, placeholder hashes, and non-existent targets
             if (href === '#' || href === '#admin-login' || href === '#user-login') {
                 return;
             }
             
-            e.preventDefault();
             const target = document.querySelector(href);
             if (target) {
+                e.preventDefault();
                 target.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
